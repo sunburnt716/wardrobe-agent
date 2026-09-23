@@ -1,0 +1,239 @@
+scalar Date
+scalar DateTime
+
+# --- Query -------------------------------------------------------------
+
+type Query {
+  me: User!
+
+  garment(id: ID!): Garment
+  garments(filters: GarmentFilters): [Garment!]!
+
+  candidateGarments(context: OutfitContext!): [Garment!]!
+
+  outfit(id: ID!): Outfit
+  outfits(filters: OutfitFilters): [Outfit!]!
+
+  compatibility(garmentIds: [ID!]!): [CompatibilityEdge!]!
+}
+
+input GarmentFilters {
+  layers: [GarmentLayer!]
+  includeRetired: Boolean = false
+  onlyClean: Boolean
+  formalityBand: IntRange
+  tags: [String!]
+  # Matches a garment whose primary OR secondary color equals any of these
+  # (case-insensitive). Backs the Closet filter row.
+  colors: [String!]
+}
+
+input OutfitFilters {
+  statuses: [OutfitStatus!]
+  wornSince: Date
+  wornBefore: Date
+  limit: Int = 50
+}
+
+input OutfitContext {
+  tempC: Int!
+  weatherCondition: String
+  occasion: String
+  requestedVibe: String
+  formalityTarget: Int
+}
+
+input IntRange {
+  min: Int
+  max: Int
+}
+
+# --- Types ---------------------------------------------------------------
+
+type User {
+  id: ID!
+  displayName: String!
+  genderIdentity: String
+  serviceStartedAt: Date!
+}
+
+type Garment {
+  id: ID!
+  type: GarmentType!
+  acquiredAt: Date
+  retiredAt: Date
+  ageDays: Int
+  # NOT NULL in the DB (db/migrations/002); always a 1-5 band.
+  warmthRating: Int!
+  formalityBand: Int!
+  primaryColor: String
+  secondaryColor: String
+  texture: String
+  silhouette: String
+  waterResistant: Boolean!
+  wearsSinceWash: Int!
+  lastWashedAt: DateTime
+  isClean: Boolean!
+  photoKey: String
+  tags: [String!]!
+  incompatibleWith: [CompatibilityEdge!]!
+}
+
+type GarmentType {
+  id: ID!
+  name: String!
+  layer: GarmentLayer!
+  defaultWearsBeforeWash: Int!
+}
+
+type Outfit {
+  id: ID!
+  status: OutfitStatus!
+  origin: OutfitOrigin!
+  proposedAt: DateTime!
+  wornOn: Date
+  requestedVibe: String
+  weatherTempC: Int
+  weatherCondition: String
+  occasion: String
+  rejectionReason: String
+  # Agent-authored look-card presentation (db/migrations/004). Null until the
+  # propose_outfit tool schema is widened to produce them.
+  title: String
+  metaLine: String
+  accentColor: String
+  washColorA: String
+  washColorB: String
+  # Rendered look image, written by the extraction pipeline. Opaque key.
+  compositeImageKey: String
+  # Each garment in the look, with the user's piece-level verdict for it in
+  # the context of THIS outfit. Replaces a flat `garments` list.
+  pieces: [OutfitPiece!]!
+}
+
+type OutfitPiece {
+  garment: Garment!
+  # null when the user hasn't reacted to this piece (the common case).
+  verdict: PieceVerdict
+  verdictAt: DateTime
+  # Why this piece (agent-authored). Distinct from Outfit-level rationale.
+  rationale: String
+  # Normalized 0..1 centroid of the piece in the composite, from the
+  # extraction pipeline. Both null or both set.
+  hotspotX: Float
+  hotspotY: Float
+  # Per-piece cutout image, from the extraction pipeline. Opaque key.
+  cutoutImageKey: String
+}
+
+type CompatibilityEdge {
+  garmentA: Garment!
+  garmentB: Garment!
+  polarity: CompatibilityPolarity!
+  source: CompatibilitySource!
+  writtenBy: Actor!
+  note: String
+  createdAt: DateTime!
+}
+
+enum GarmentLayer { BASE MID OUTER BOTTOM FOOTWEAR ACCESSORY }
+enum OutfitStatus { PROPOSED ACCEPTED REJECTED WORN }
+# Piece-level reaction to one garment inside one look. Absence of a verdict
+# (no row value) is the third state and is modelled as null, not an enum member.
+enum PieceVerdict { LOVE NOT_THIS }
+enum OutfitOrigin { AGENT MANUAL }
+enum CompatibilityPolarity { PAIRS_WELL NEVER_PAIR }
+# Two-value by design: type-level "strict" rules (e.g. white socks never with
+# dress shoes) are never materialized as rows here -- they live in solver
+# logic instead, since a rule tied to two specific garment_ids silently stops
+# applying the next time a matching garment is added. See db/schema.sql.
+enum CompatibilitySource { LEARNED MANUAL }
+enum Actor { USER AGENT }
+
+# --- Mutation ------------------------------------------------------------
+
+type Mutation {
+  # --- user actor: garments -------------------------------------------
+  createGarment(input: CreateGarmentInput!): ActionResult!
+  updateGarment(id: ID!, input: UpdateGarmentInput!): ActionResult!
+  retireGarment(id: ID!): ActionResult!
+  washGarment(id: ID!): ActionResult!
+
+  # --- user actor: outfit disposition ----------------------------------
+  acceptOutfit(id: ID!): ActionResult!
+  rejectOutfit(id: ID!, reason: String): ActionResult!
+  markOutfitWorn(id: ID!, wornOn: Date): ActionResult!
+  logManualOutfit(input: LogManualOutfitInput!): ActionResult!
+
+  # Re-wear a past look: clones its garment set and presentation into a new
+  # worn outfit (origin manual), bumps wear counters. Does not carry over the
+  # source's weather/vibe snapshot or piece verdicts. Fails if the outfit
+  # isn't the caller's.
+  rewearOutfit(id: ID!, wornOn: Date): ActionResult!
+
+  # Piece-level love / not-this on one garment inside a proposed look.
+  # verdict: null clears the verdict. Fails (success: false) if the garment
+  # isn't part of the outfit, or the outfit was rejected.
+  setPieceVerdict(outfitId: ID!, garmentId: ID!, verdict: PieceVerdict): ActionResult!
+
+  # --- user actor: compatibility ---------------------------------------
+  setCompatibilityEdge(input: SetCompatibilityEdgeInput!): ActionResult!
+  deleteCompatibilityEdge(garmentAId: ID!, garmentBId: ID!): ActionResult!
+}
+
+type ActionResult {
+  success: Boolean!
+  code: String
+  message: String
+  garment: Garment
+  outfit: Outfit
+  edge: CompatibilityEdge
+}
+
+input CreateGarmentInput {
+  garmentTypeId: ID!
+  acquiredAt: Date
+  # Optional here, but NOT NULL in storage: omitting them applies a
+  # documented fallback in the DAL (warmth 3, formality 1 = casual), not a
+  # stored NULL. See createGarment in api/dal/garments.ts.
+  warmthRating: Int
+  formalityBand: Int
+  primaryColor: String
+  secondaryColor: String
+  texture: String
+  silhouette: String
+  waterResistant: Boolean
+  wearsBeforeWashOverride: Int
+  photoKey: String
+  tags: [String!]
+}
+
+input UpdateGarmentInput {
+  acquiredAt: Date
+  warmthRating: Int
+  formalityBand: Int
+  primaryColor: String
+  secondaryColor: String
+  texture: String
+  silhouette: String
+  waterResistant: Boolean
+  wearsBeforeWashOverride: Int
+  photoKey: String
+  tags: [String!]
+}
+
+input LogManualOutfitInput {
+  garmentIds: [ID!]!
+  wornOn: Date!
+  requestedVibe: String
+  weatherTempC: Int
+  weatherCondition: String
+  occasion: String
+}
+
+input SetCompatibilityEdgeInput {
+  garmentAId: ID!
+  garmentBId: ID!
+  polarity: CompatibilityPolarity!
+  note: String
+}

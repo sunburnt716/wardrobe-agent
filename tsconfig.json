@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
+    "declaration": true
+  },
+  "include": [
+    "api",
+    "agent",
+    "src",
+    "tools",
+    "api/resolvers",
+    "db",
+    "composition.ts",
+    "server.ts"
+  ]
+}

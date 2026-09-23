@@ -1,0 +1,30 @@
+{
+  "name": "wardrobe-agent",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "agent": "tsx agent/runtime.ts",
+    "pretest:dal": "tsx --env-file-if-exists=.env db/setupTestDb.ts",
+    "test:dal": "tsx --env-file-if-exists=.env --test --experimental-test-module-mocks db/transaction.test.ts api/dal/garments.test.ts api/dal/outfits.test.ts api/dal/compatibility.test.ts agent/loop.test.ts agent/palette.test.ts",
+    "test:resolvers": "tsx --env-file-if-exists=.env --test --experimental-test-module-mocks api/resolvers/Query.test.ts api/resolvers/Mutation.test.ts",
+    "test:tools": "tsx --env-file-if-exists=.env --test --experimental-test-module-mocks tools/registry.test.ts",
+    "test": "npm run test:resolvers && npm run test:tools && npm run test:dal",
+    "preeval": "tsx --env-file-if-exists=.env db/setupTestDb.ts",
+    "eval": "tsx --env-file-if-exists=.env --test eval/*.eval.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
+    "@apollo/client": "^4.3.1",
+    "dataloader": "^2.2.2",
+    "graphql": "^16.14.2",
+    "graphql-yoga": "^5.10.4",
+    "pg": "^8.13.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
