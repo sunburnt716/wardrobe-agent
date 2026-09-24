@@ -2,6 +2,7 @@
   "name": "wardrobe-agent",
   "private": true,
   "scripts": {
+    "start": "tsx server.ts",
     "typecheck": "tsc --noEmit",
     "agent": "tsx agent/runtime.ts",
     "pretest:dal": "tsx --env-file-if-exists=.env db/setupTestDb.ts",
@@ -19,12 +20,12 @@
     "graphql": "^16.14.2",
     "graphql-yoga": "^5.10.4",
     "pg": "^8.13.0",
+    "tsx": "^4.19.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
-    "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }
 }
