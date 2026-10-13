@@ -2,6 +2,9 @@
 // tree (its own documented requirement).
 import 'react-native-gesture-handler';
 import { registerRootComponent } from 'expo';
-import App from './App';
+
+// UX PROPOSAL is active. To revert to the shipped app, swap these two lines:
+//   import App from './App';
+import App from './App.proposal';
 
 registerRootComponent(App);
