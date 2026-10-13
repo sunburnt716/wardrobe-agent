@@ -6,6 +6,11 @@ scalar DateTime
 type Query {
   me: User!
 
+  # Live forecast for the caller's stored location, for the Today status
+  # pill. Always resolves -- a provider failure or an absent location
+  # degrades `source`, it does not error.
+  weather: Weather!
+
   garment(id: ID!): Garment
   garments(filters: GarmentFilters): [Garment!]!
 
@@ -55,6 +60,27 @@ type User {
   displayName: String!
   genderIdentity: String
   serviceStartedAt: Date!
+
+  # Where the forecast is taken for. Null until the client reports a
+  # location (db/migrations/005) -- null is how a client detects it should
+  # ask; the forecast itself falls back rather than failing.
+  latitude: Float
+  longitude: Float
+}
+
+# A live forecast for the caller's stored location. Distinct from the
+# weatherTempC / weatherCondition on Outfit, which are a frozen
+# decision-time snapshot and must never be refreshed from this.
+type Weather {
+  # Celsius, matching Outfit.weatherTempC. Display-unit conversion is the
+  # client's concern.
+  tempC: Int!
+  # clear | rain | snow | wind -- String to match Outfit.weatherCondition.
+  condition: String!
+  # live | fallback -- provenance, so the UI can tell a real forecast from a
+  # degraded one instead of presenting both as fact. ('user_stated' is an
+  # agent-loop concern and never reaches this query.)
+  source: String!
 }
 
 type Garment {
@@ -153,6 +179,11 @@ enum Actor { USER AGENT }
 # --- Mutation ------------------------------------------------------------
 
 type Mutation {
+  # --- user actor: profile ---------------------------------------------
+  # Report the device's coordinates. User actor only -- the agent reads
+  # location, never writes it, since it has no device to read one from.
+  setLocation(latitude: Float!, longitude: Float!): ActionResult!
+
   # --- user actor: garments -------------------------------------------
   createGarment(input: CreateGarmentInput!): ActionResult!
   updateGarment(id: ID!, input: UpdateGarmentInput!): ActionResult!

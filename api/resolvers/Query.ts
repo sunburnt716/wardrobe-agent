@@ -10,6 +10,7 @@ import {
   type OutfitContext,
   type OutfitFilters,
 } from '../dal';
+import { FALLBACK_LOCATION, tempFToC } from '../../composition';
 import type { RequestContext } from './context';
 
 // All two-to-three lines: read from ctx, call the matching DAL function,
@@ -25,6 +26,25 @@ import type { RequestContext } from './context';
 export const Query = {
   me: (_parent: unknown, _args: unknown, ctx: RequestContext) =>
     getUser(ctx.pool, ctx.userId),
+
+  // Thicker than the rest of this file by necessity: the forecast is not a
+  // DAL read, so the location lookup, the fallback, and the F->C conversion
+  // have nowhere else to sit. It stays a read of two sources, not a
+  // decision -- no legality question is being answered here.
+  weather: async (_parent: unknown, _args: unknown, ctx: RequestContext) => {
+    const user = await getUser(ctx.pool, ctx.userId);
+    const location =
+      user?.latitude !== null && user?.longitude !== null && user !== null
+        ? { latitude: user.latitude, longitude: user.longitude }
+        : FALLBACK_LOCATION;
+
+    const snapshot = await ctx.weatherProvider.forecast(location, new Date());
+    return {
+      tempC: tempFToC(snapshot.tempF),
+      condition: snapshot.condition,
+      source: snapshot.source,
+    };
+  },
 
   garment: (
     _parent: unknown,

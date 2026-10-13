@@ -2,9 +2,9 @@
  * Font families and the named text styles used across the app.
  *
  * Display is Yeseva One; body is Lora (a serif — the spec forbids
- * sans-serif anywhere). Family strings are PostScript names; the .ttf files
- * are linked natively (see assets/fonts/README.md), so there is no runtime
- * font loader.
+ * sans-serif anywhere). Family strings are the keys `expo-font` registers
+ * the .ttf files under — see `src/theme/fonts.ts`, which must have loaded
+ * before any of these presets render.
  *
  * RN `letterSpacing` is in points, not `em`, so the CSS `em` values from the
  * design are pre-multiplied by their font size here.

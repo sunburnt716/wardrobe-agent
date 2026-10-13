@@ -1,4 +1,26 @@
 {
-  "name": "fitcheck",
-  "displayName": "Fitcheck"
+  "expo": {
+    "name": "Fitcheck",
+    "slug": "fitcheck",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "fitcheck",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.fitcheck.app"
+    },
+    "android": {
+      "package": "com.fitcheck.app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "994bc645-c6ab-4f6e-a7fe-d72bce01723f"
+      }
+    },
+    "owner": "sunburnt07s-team",
+    "plugins": [
+      "expo-font"
+    ]
+  }
 }

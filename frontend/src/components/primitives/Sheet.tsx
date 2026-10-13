@@ -74,7 +74,7 @@ export function Sheet({ visible, onClose, accentBar = true, children }: SheetPro
 
 const styles = StyleSheet.create({
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: colour.inkA(0.42),
   },
   panel: {

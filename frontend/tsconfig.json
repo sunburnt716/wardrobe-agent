@@ -1,12 +1,25 @@
 {
-  "extends": "@react-native/typescript-config",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "jsx": "react-native",
-    "types": []
+    "types": [],
+    // Icon.tsx deep-imports phosphor icons (see the comment there). The
+    // package's "react-native" export condition points at .tsx source, which
+    // is correct for Metro but drags third-party source into the typecheck --
+    // and that source has a pre-existing conflict with this react-native-svg
+    // version (it passes `className` to Svg). skipLibCheck does not cover
+    // .tsx. Resolving types from the shipped declarations instead keeps the
+    // runtime resolution untouched: Metro reads the exports map, tsc reads
+    // this mapping, and skipLibCheck then applies.
+    "paths": {
+      "phosphor-react-native/src/icons/*": [
+        "./node_modules/phosphor-react-native/lib/typescript/icons/*"
+      ]
+    }
   },
-  "include": ["src", "App.tsx", "index.js"],
+  "include": ["src", "App.tsx", "App.diagnostic.tsx", "index.js"],
   "exclude": ["node_modules"]
 }

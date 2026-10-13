@@ -10,6 +10,7 @@ import {
   rewearOutfit,
   setCompatibilityEdge,
   setPieceVerdict,
+  setUserLocation,
   updateGarment,
   washGarment,
   type CreateGarmentInput,
@@ -17,16 +18,16 @@ import {
   type PieceVerdict,
   type SetCompatibilityEdgeInput,
   type UpdateGarmentInput,
-} from '../dal';
-import { InvariantViolation } from '../../db/errors';
-import type { RequestContext } from './context';
+} from "../dal";
+import { InvariantViolation } from "../../db/errors";
+import type { RequestContext } from "./context";
 import {
   edgeResult,
   garmentResult,
   invariantResult,
   outfitResult,
   type ActionResult,
-} from './actionResult';
+} from "./actionResult";
 
 // Same thinness as Query.ts: no validation, no ownership check, no legality
 // decision here -- all of that is DAL-side, because the agent bypasses this
@@ -38,6 +39,43 @@ import {
 // ctx.pool straight through; multi-statement writes call
 // ctx.withTransaction and pass the resulting TxClient in.
 export const Mutation = {
+  // The one place this layer validates more than nothing. A coordinate out
+  // of range is a malformed request, not an illegal write against current
+  // state, so it is shape validation and belongs here -- and it holds only
+  // because location has no agent write path (same carve-out, and same
+  // condition on it, as setPieceVerdict's checks). The column CHECK in
+  // db/migrations/005 is the backstop if that ever stops being true.
+  setLocation: async (
+    _parent: unknown,
+    { latitude, longitude }: { latitude: number; longitude: number },
+    ctx: RequestContext,
+  ): Promise<ActionResult> => {
+    if (latitude < -90 || latitude > 90 || !Number.isFinite(latitude)) {
+      return {
+        success: false,
+        code: "INVALID_LATITUDE",
+        message: "Latitude must be between -90 and 90.",
+      };
+    }
+    if (longitude < -180 || longitude > 180 || ! mnNumber.isFinite(longitude)) {
+      return {
+        success: false,
+        code: "INVALID_LONGITUDE",
+        message: "Longitude must be between -180 and 180.",
+      };
+    }
+
+    const user = await setUserLocation(
+      ctx.pool,
+      ctx.userId,
+      latitude,
+      longitude,
+    );
+    return user
+      ? { success: true }
+      : { success: false, code: "NOT_FOUND", message: "User not found." };
+  },
+
   createGarment: (
     _parent: unknown,
     { input }: { input: CreateGarmentInput },
@@ -82,9 +120,7 @@ export const Mutation = {
     { id, reason }: { id: string; reason?: string },
     ctx: RequestContext,
   ): Promise<ActionResult> =>
-    outfitResult(
-      await rejectOutfit(ctx.pool, ctx.userId, Number(id), reason),
-    ),
+    outfitResult(await rejectOutfit(ctx.pool, ctx.userId, Number(id), reason)),
 
   markOutfitWorn: (
     _parent: unknown,
@@ -134,20 +170,24 @@ export const Mutation = {
   ): Promise<ActionResult> => {
     const outfit = await getOutfit(ctx.pool, ctx.userId, Number(outfitId));
     if (!outfit) {
-      return { success: false, code: 'NOT_FOUND', message: 'Outfit not found.' };
-    }
-    if (outfit.status === 'rejected') {
       return {
         success: false,
-        code: 'OUTFIT_REJECTED',
-        message: 'This outfit was rejected; piece verdicts are closed.',
+        code: "NOT_FOUND",
+        message: "Outfit not found.",
+      };
+    }
+    if (outfit.status === "rejected") {
+      return {
+        success: false,
+        code: "OUTFIT_REJECTED",
+        message: "This outfit was rejected; piece verdicts are closed.",
       };
     }
     if (!outfit.pieces.some((p) => p.garment.id === Number(garmentId))) {
       return {
         success: false,
-        code: 'GARMENT_NOT_IN_OUTFIT',
-        message: 'That garment is not part of this outfit.',
+        code: "GARMENT_NOT_IN_OUTFIT",
+        message: "That garment is not part of this outfit.",
       };
     }
     return outfitResult(
@@ -172,9 +212,7 @@ export const Mutation = {
   ): Promise<ActionResult> =>
     ctx.withTransaction(async (tx) => {
       try {
-        return edgeResult(
-          await setCompatibilityEdge(tx, ctx.userId, input),
-        );
+        return edgeResult(await setCompatibilityEdge(tx, ctx.userId, input));
       } catch (err) {
         if (err instanceof InvariantViolation) return invariantResult(err);
         throw err;
@@ -196,8 +234,8 @@ export const Mutation = {
       ? { success: true }
       : {
           success: false,
-          code: 'NOT_FOUND',
-          message: 'Compatibility edge not found.',
+          code: "NOT_FOUND",
+          message: "Compatibility edge not found.",
         };
   },
 };

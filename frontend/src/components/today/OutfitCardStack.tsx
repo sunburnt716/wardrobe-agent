@@ -20,7 +20,7 @@ export function OutfitCardStack({ children }: { children: ReactNode }) {
 
 const styles = StyleSheet.create({
   stack: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   layer: {
     position: 'absolute',

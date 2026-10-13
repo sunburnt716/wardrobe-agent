@@ -1,5 +1,6 @@
 import type { Pool } from 'pg';
-import { pool, withTransaction } from '../../composition';
+import { pool, weatherProvider, withTransaction } from '../../composition';
+import type { WeatherProvider } from '../../agent/weather';
 import type { TxClient } from '../../db/transaction';
 import { buildLoaders, type Loaders } from './loaders';
 
@@ -22,6 +23,9 @@ export interface RequestContext {
   // ctx.pool -- it opens a transaction and hands the resolver a branded
   // TxClient, which is the only thing those DAL functions will accept.
   withTransaction: <T>(fn: (tx: TxClient) => Promise<T>) => Promise<T>;
+  // Injected rather than imported at the resolver so Query.weather can be
+  // tested against a fake provider without a network call.
+  weatherProvider: WeatherProvider;
 }
 
 interface IncomingRequest {
@@ -44,5 +48,6 @@ export function buildContext(req: IncomingRequest): RequestContext {
     loaders: buildLoaders(pool, userId),
     pool,
     withTransaction,
+    weatherProvider,
   };
 }

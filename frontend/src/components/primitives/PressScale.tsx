@@ -16,6 +16,7 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
+  type AnimatedStyle,
 } from 'react-native-reanimated';
 import { PRESS_SCALE, spring, timing } from '../../theme/tokens';
 
@@ -23,7 +24,10 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export interface PressScaleProps extends Omit<PressableProps, 'style' | 'children'> {
   children: ReactNode;
-  style?: StyleProp<ViewStyle>;
+  // Animated, not plain ViewStyle: this renders an AnimatedPressable and
+  // merges the caller's style with its own press-scale style, so callers
+  // legitimately pass a useAnimatedStyle result (see ProgressRail).
+  style?: StyleProp<AnimatedStyle<ViewStyle>>;
 }
 
 export function PressScale({

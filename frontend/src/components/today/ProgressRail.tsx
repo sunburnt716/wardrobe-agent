@@ -5,13 +5,23 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { colour, radius, spring, timing } from '../../theme/tokens';
+import { colour, radius, timing } from '../../theme/tokens';
 import { PressScale } from '../primitives/PressScale';
+
+// Resolved to plain strings at module scope, on purpose. A worklet captures
+// its free variables into a `__closure` that is SERIALIZED into the UI
+// runtime: shared values, numbers and strings cross fine, but a function
+// cannot. Reading `colour.inkA(0.18)` inside the worklet captured the whole
+// `colour` tokens object just to call that arrow function on the UI thread,
+// which crashed the app at first paint. Keep these as strings and the closure
+// stays serializable.
+const BAR_OFF = colour.inkA(0.18);
+const BAR_ON = colour.brand;
 
 function Segment({
   active,
@@ -20,24 +30,37 @@ function Segment({
   active: boolean;
   onPress: () => void;
 }) {
-  // Animating flex-grow triggers a layout each frame — fine for three items
-  // and it matches the prototype's `flex-grow` transition.
-  const grow = useSharedValue(active ? 4 : 1);
+  // `flexGrow` is deliberately NOT animated. Returning a layout property from
+  // useAnimatedStyle forces a Yoga layout pass on the UI thread every frame,
+  // and on the New Architecture that segfaults the process at first paint --
+  // it was the cause of the Expo Go startup crash. The width change is a
+  // plain prop now, so React lays it out once per look change.
+  //
+  // Composing an animated style into PressScale is fine and was ruled out as
+  // a cause. Colour still animates, since that is a paint property and safe
+  // on the UI thread -- but note that being a safe PROPERTY was never the
+  // whole story: this component then crashed a second time because the
+  // worklet CALLED `colour.inkA()`. What a worklet may read and what it may
+  // call are separate questions. See the BAR_OFF / BAR_ON note above.
   const on = useSharedValue(active ? 1 : 0);
 
   useEffect(() => {
-    grow.value = withSpring(active ? 4 : 1, spring.gentle);
     on.value = withTiming(active ? 1 : 0, { duration: timing.colour });
-  }, [active, grow, on]);
+  }, [active, on]);
 
-  const growStyle = useAnimatedStyle(() => ({ flexGrow: grow.value }));
+  // interpolateColor is itself a worklet, so it is safe to call here -- and it
+  // actually crossfades. The previous `on.value > 0.5 ? a : b` snapped at the
+  // midpoint, so `timing.colour` ("colour / opacity crossfades") produced no
+  // visible transition at all.
   const barStyle = useAnimatedStyle(() => ({
-    opacity: 1,
-    backgroundColor: on.value > 0.5 ? colour.brand : colour.inkA(0.18),
+    backgroundColor: interpolateColor(on.value, [0, 1], [BAR_OFF, BAR_ON]),
   }));
 
   return (
-    <PressScale onPress={onPress} style={[styles.segment, growStyle]}>
+    <PressScale
+      onPress={onPress}
+      style={[styles.segment, { flexGrow: active ? 4 : 1 }]}
+    >
       <View style={styles.track}>
         <Animated.View style={[styles.bar, barStyle]} />
       </View>

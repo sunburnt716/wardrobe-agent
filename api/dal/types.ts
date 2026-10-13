@@ -28,6 +28,10 @@ export interface User {
   displayName: string;
   genderIdentity: string | null;
   serviceStartedAt: string; // date (YYYY-MM-DD)
+  // Null-together (db/migrations/005): no location granted yet. Callers fall
+  // back rather than failing -- see composition.ts's FALLBACK_LOCATION.
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface GarmentType {

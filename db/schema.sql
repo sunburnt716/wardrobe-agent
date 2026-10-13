@@ -6,11 +6,21 @@
 -- ---------------------------------------------------------------------------
 -- users
 -- ---------------------------------------------------------------------------
+-- latitude / longitude (db/migrations/005) are where the weather forecast is
+-- taken for. Device-acquired (only the handset knows its GPS), stored here
+-- because the headless agent has no device to ask. Nullable and
+-- null-together: no location yet means the forecast falls back rather than
+-- fails. Range checks enforce the coordinate contract at the column.
 CREATE TABLE users (
     user_id              SERIAL PRIMARY KEY,
     display_name         TEXT NOT NULL,
     gender_identity       TEXT,
-    service_started_at    DATE NOT NULL DEFAULT CURRENT_DATE
+    service_started_at    DATE NOT NULL DEFAULT CURRENT_DATE,
+    latitude             REAL,
+    longitude            REAL,
+    CONSTRAINT location_pair_null CHECK ((latitude IS NULL) = (longitude IS NULL)),
+    CONSTRAINT latitude_range  CHECK (latitude  IS NULL OR (latitude  >= -90  AND latitude  <= 90)),
+    CONSTRAINT longitude_range CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180))
 );
 
 -- ---------------------------------------------------------------------------

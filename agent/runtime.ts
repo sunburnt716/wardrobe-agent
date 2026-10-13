@@ -3,12 +3,18 @@
 // pool per process, reachable from both entry points" (server/transaction
 // dev spec). It must never load its own config or construct its own Pool --
 // that stays in composition.ts (which is also where .env is applied).
-import { assertDatabaseReachable, pool, withTransaction } from '../composition';
+import {
+  assertDatabaseReachable,
+  FALLBACK_LOCATION,
+  pool,
+  weatherProvider,
+  withTransaction,
+} from '../composition';
+import { getUser } from '../api/dal';
 import { runAgentLoop, type LoopDeps } from './loop';
 import { AnthropicModelClient } from './modelClient';
 import { LookupPaletteProvider } from './palette';
 import { DEFAULT_REPORT_DIR, FileProposalReportSink } from './proposalReport';
-import { OpenMeteoWeatherProvider, type Location } from './weather';
 
 export { pool, withTransaction };
 
@@ -22,19 +28,21 @@ export async function assertReady(): Promise<void> {
   await assertDatabaseReachable();
 }
 
-// schema.sql's users table has no location column yet (loop.ts flags this
-// as an open seam). Until it does, every user resolves to one hardcoded
-// location so the loop can run end to end. Replace with a profile lookup
-// once the column lands.
-const DEFAULT_LOCATION: Location = { latitude: 40.7128, longitude: -74.006 };
-
 export function buildLoopDeps(): LoopDeps {
   return {
     // API key comes from ANTHROPIC_API_KEY (loaded from .env by
     // composition.ts); the SDK reads it from the environment by default.
     modelClient: new AnthropicModelClient(),
-    weatherProvider: new OpenMeteoWeatherProvider(),
-    getLocationForUser: async () => DEFAULT_LOCATION,
+    weatherProvider,
+    // Profile lookup (db/migrations/005). Falls back rather than failing
+    // for a user who has not reported a location -- the agent has no device
+    // to ask, so an absent location must not block a proposal.
+    getLocationForUser: async (userId: number) => {
+      const user = await getUser(pool, userId);
+      return user?.latitude !== null && user?.longitude !== null && user !== null
+        ? { latitude: user.latitude, longitude: user.longitude }
+        : FALLBACK_LOCATION;
+    },
     pool,
     withTransaction,
     now: () => new Date(),

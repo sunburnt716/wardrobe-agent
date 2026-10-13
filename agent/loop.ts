@@ -62,10 +62,10 @@ export interface LoopResult {
 export interface LoopDeps {
   modelClient: ModelClient;
   weatherProvider: WeatherProvider;
-  // Location is meant to come from the user's profile (tool layer dev spec
-  // §3), never a model-supplied parameter -- but db/schema.sql's users
-  // table has no location column yet. Injected here as an open seam rather
-  // than guessed at, pending that schema decision.
+  // Location comes from the user's profile (tool layer dev spec §3), never
+  // a model-supplied parameter -- users.latitude/longitude as of
+  // db/migrations/005. Still injected rather than read here so the loop
+  // stays testable without a database.
   getLocationForUser: (userId: number) => Promise<Location>;
   pool: Pool;
   withTransaction: <T>(fn: (tx: TxClient) => Promise<T>) => Promise<T>;

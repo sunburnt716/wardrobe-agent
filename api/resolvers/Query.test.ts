@@ -20,6 +20,13 @@ function fakeContext(overrides: Partial<RequestContext> = {}): RequestContext {
     loaders: {} as RequestContext['loaders'],
     pool: {} as RequestContext['pool'],
     withTransaction: async (fn) => fn({} as never),
+    weatherProvider: {
+      forecast: async () => ({
+        condition: 'clear' as const,
+        tempF: 65,
+        source: 'fallback' as const,
+      }),
+    },
     ...overrides,
   };
 }
