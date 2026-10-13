@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   spineText: {
     fontFamily: 'Lora-SemiBold',
-    fontSize: 9.5,
+    fontSize: 11,
     letterSpacing: 2.3,
     color: '#fdf6ee',
   },

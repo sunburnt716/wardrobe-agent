@@ -1,0 +1,150 @@
+/**
+ * PROPOSAL ONLY. Vertical paging through the day's looks.
+ *
+ * The axes are now orthogonal: vertical cycles looks, horizontal pages
+ * destinations. Nothing has to arbitrate between them, which is the whole
+ * reason for choosing this over discriminating by region -- a region boundary
+ * is invisible to the user, and OutfitCard fills most of the screen, so the
+ * horizontal destination swipe would have become unusable on Today.
+ *
+ * Native paging again rather than a pan gesture: no worklet, no new
+ * dependency, and the scroll cannot desynchronise from the finger.
+ *
+ * Two-way sync with the session store. A swipe sets the index on settle; a
+ * rail tap sets the index and this scrolls to match. Scrolling to a position
+ * it is already at is a no-op, so the two directions do not fight.
+ *
+ * TRADE-OFF ACCEPTED: using the vertical axis here forecloses
+ * swipe-up-to-commit, which the design spec listed as an open option for the
+ * whole-look commit. That is fine because the commit now has a home in the
+ * three-verb pill row, but it is a real door closing.
+ */
+import { useEffect, useRef } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
+import type { Outfit, Verdict } from '../data/types';
+import { PLookCard } from './PLookCard';
+import type { LookVerdict } from './LookVerdictsProvider';
+
+/** How much of the next card stays visible below the current one. */
+const PEEK = 56;
+/** Breathing room between cards, so the peek reads as a separate object. */
+const CARD_GAP = 14;
+
+/**
+ * OutfitCardStack is deliberately not used here any more. Its two rotated
+ * paper layers sold the illusion of a deck when exactly one proposal was on
+ * screen. Now that the next card is genuinely visible below, a fake stack
+ * behind each real card reads as clutter and its rotated corners bleed into
+ * the gap. The real cards do that job now.
+ */
+
+export interface PLookPagerProps {
+  proposals: Outfit[];
+  index: number;
+  onIndexChange: (i: number) => void;
+  /** Measured height of one page. Pages render only once this is known. */
+  pageHeight: number;
+  openPieceIndex: number | null;
+  pieceVerdict: (i: number) => Verdict | null;
+  onPieceTap: (i: number) => void;
+  /** Per-outfit, because each card now carries its own actions. */
+  verdictFor: (outfitId: string) => LookVerdict | null;
+  onCommit: (outfitId: string, verdict: LookVerdict) => void;
+  isSaved: (outfitId: string) => boolean;
+  onToggleSave: (outfit: Outfit) => void;
+  onOpenDetails: (outfit: Outfit) => void;
+}
+
+export function PLookPager({
+  proposals,
+  index,
+  onIndexChange,
+  pageHeight,
+  openPieceIndex,
+  pieceVerdict,
+  onPieceTap,
+  verdictFor,
+  onCommit,
+  isSaved,
+  onToggleSave,
+  onOpenDetails,
+}: PLookPagerProps) {
+  const ref = useRef<ScrollView>(null);
+
+  // Each card is shorter than the viewport by PEEK, so the top of the next
+  // card is always visible. That sliver is the affordance: it shows there is
+  // more below without needing a hint line to say so.
+  const cardHeight = Math.max(pageHeight - PEEK, 1);
+  const interval = cardHeight + CARD_GAP;
+
+  // Follow the session index — this is how a rail tap moves the pager.
+  useEffect(() => {
+    if (pageHeight <= 0) return;
+    ref.current?.scrollTo({ y: index * interval, animated: true });
+  }, [index, interval, pageHeight]);
+
+  const onSettled = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (pageHeight <= 0) return;
+    const next = Math.round(e.nativeEvent.contentOffset.y / interval);
+    if (next !== index) onIndexChange(next);
+  };
+
+  // Before the first measurement there is no page size to lay out against.
+  if (pageHeight <= 0) return <View style={styles.fill} />;
+
+  return (
+    <ScrollView
+      ref={ref}
+      // snapToInterval rather than pagingEnabled: paging snaps to the
+      // VIEWPORT height, which would hide the peek. This snaps to the card.
+      snapToInterval={interval}
+      snapToAlignment="start"
+      decelerationRate="fast"
+      disableIntervalMomentum
+      nestedScrollEnabled
+      showsVerticalScrollIndicator={false}
+      onMomentumScrollEnd={onSettled}
+      scrollEventThrottle={16}
+      style={styles.fill}
+      // Lets the last card still reach the top of the viewport.
+      contentContainerStyle={{ paddingBottom: PEEK }}
+    >
+      {proposals.map((look, i) => (
+        <View
+          key={look.id}
+          style={{
+            height: cardHeight,
+            marginBottom: i === proposals.length - 1 ? 0 : CARD_GAP,
+          }}
+        >
+            <PLookCard
+              outfit={look}
+              lookNumber={i + 1}
+              // Hotspot state belongs to the look on screen, so the cards
+              // off-screen render inert rather than mirroring the open sheet.
+              openPieceIndex={i === index ? openPieceIndex : null}
+              pieceVerdict={i === index ? pieceVerdict : () => null}
+              onPieceTap={onPieceTap}
+              // Verdict and save are per-outfit, so every card shows its own
+              // state whether or not it is the one on screen.
+              verdict={verdictFor(look.id)}
+              onCommit={(v) => onCommit(look.id, v)}
+              saved={isSaved(look.id)}
+              onToggleSave={() => onToggleSave(look)}
+              onOpenDetails={() => onOpenDetails(look)}
+            />
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  fill: { flex: 1 },
+});

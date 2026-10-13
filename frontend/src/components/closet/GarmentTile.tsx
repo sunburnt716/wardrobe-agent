@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: colour.paperAlt,
-    fontSize: 8.5,
+    fontSize: 11,
     letterSpacing: 0.7,
   },
   caption: {

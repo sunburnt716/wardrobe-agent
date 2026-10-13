@@ -37,10 +37,7 @@ export function DatelineHeader({
     <View style={styles.wrap}>
       <View style={{ height: topRule, backgroundColor: ruleColour }} />
       <View style={styles.row}>
-        <AppText
-          variant="microLabel"
-          style={[styles.side, { color: textColour, opacity: 0.85 }]}
-        >
+        <AppText variant="microLabel" style={[styles.side, { color: textColour }]}>
           {left}
         </AppText>
 
@@ -49,7 +46,7 @@ export function DatelineHeader({
           style={
             centerVariant === 'wordmark'
               ? undefined
-              : { color: textColour, fontSize: 15 }
+              : { color: textColour, fontSize: 19 }
           }
         >
           {center}
@@ -57,12 +54,9 @@ export function DatelineHeader({
 
         <View style={[styles.side, styles.right]}>
           {rightIcon ? (
-            <Icon name={rightIcon} size={16} color={textColour} />
+            <Icon name={rightIcon} size={19} color={textColour} />
           ) : (
-            <AppText
-              variant="microLabel"
-              style={{ color: textColour, opacity: 0.8 }}
-            >
+            <AppText variant="microLabel" style={{ color: textColour }}>
               {rightText ?? ''}
             </AppText>
           )}

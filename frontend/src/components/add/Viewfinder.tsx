@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     left: 30,
     top: 36,
     fontFamily: 'Lora-SemiBold',
-    fontSize: 9,
+    fontSize: 11,
     letterSpacing: 1.3,
     textTransform: 'uppercase',
     color: colour.detect,

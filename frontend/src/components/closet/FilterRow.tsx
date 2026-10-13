@@ -36,7 +36,7 @@ export function FilterRow({
               <AppText
                 variant="microLabel"
                 style={{
-                  color: active ? colour.brand : colour.inkA(0.6),
+                  color: active ? colour.brandInk : colour.inkA(0.7),
                   letterSpacing: 1.3,
                 }}
               >

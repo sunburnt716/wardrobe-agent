@@ -38,7 +38,7 @@ export function ImageSlot({
       ]}
     >
       {icon ? (
-        <Icon name={icon} size={iconSize} color={colour.inkA(0.5)} />
+        <Icon name={icon} size={iconSize} color={colour.inkA(0.7)} />
       ) : null}
       {children}
     </View>

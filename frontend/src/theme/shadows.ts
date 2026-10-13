@@ -25,17 +25,27 @@ type Recipe = {
   elevation: number;
 };
 
+/**
+ * Elevation scale, graded so depth ranks things.
+ *
+ * `card`, `soft` and `tabBar` previously sat at blur 16/16/22 and opacity
+ * .28/.32/.30 — close enough that elevation did not establish an order. The
+ * steps below are deliberately further apart, so a shadow tells you which
+ * tier an object is on rather than merely that it has one.
+ *
+ * Order, lowest to highest: badge < soft < card < tabBar < sheet.
+ */
 const RECIPES = {
-  /** Resting outfit card: 0 34px 60px -30 / 0 4px 12px -8. */
-  card: { y: 16, radius: 22, opacity: 0.3, elevation: 14 },
-  /** Floating tab bar: 0 16px 32px -20 / 0 3px 8px -6. */
-  tabBar: { y: 10, radius: 16, opacity: 0.32, elevation: 12 },
-  /** Detail sheet (shadow points UP): 0 -10px 60px -20. */
-  sheet: { y: -8, radius: 24, opacity: 0.4, elevation: 24 },
-  /** List rows, chat bubbles, closet tiles: 0 14–20px 26–38px -16..-20. */
-  soft: { y: 12, radius: 16, opacity: 0.28, elevation: 8 },
-  /** Small verdict badge. */
-  badge: { y: 5, radius: 8, opacity: 0.4, elevation: 6 },
+  /** Tier 1 — a small object attached to its parent. Verdict badges. */
+  badge: { y: 3, radius: 6, opacity: 0.34, elevation: 4 },
+  /** Tier 2 — resting in a run: list rows, chat bubbles, closet tiles. */
+  soft: { y: 8, radius: 14, opacity: 0.22, elevation: 7 },
+  /** Tier 3 — the surface the screen is about: the outfit card. */
+  card: { y: 18, radius: 28, opacity: 0.3, elevation: 16 },
+  /** Tier 4 — floating chrome, above content but below modals. */
+  tabBar: { y: 12, radius: 22, opacity: 0.3, elevation: 20 },
+  /** Tier 5 — modal, and the one that points UP. Detail sheets. */
+  sheet: { y: -10, radius: 34, opacity: 0.44, elevation: 28 },
 } satisfies Record<string, Recipe>;
 
 export type ShadowName = keyof typeof RECIPES;

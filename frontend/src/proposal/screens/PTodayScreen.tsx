@@ -11,21 +11,21 @@
  * layout decision (a shorter dateline, a smaller pill), not a scroll
  * behaviour, and is left alone here on purpose so the comparison stays clean.
  */
-import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { colour, space } from '../../theme/tokens';
 import { AppText } from '../../components/primitives/AppText';
 import { ScreenScaffold } from '../../components/layout/ScreenScaffold';
 import { GarmentDetailSheet } from '../../components/today/GarmentDetailSheet';
-import { OutfitCard } from '../../components/today/OutfitCard';
-import { OutfitCardStack } from '../../components/today/OutfitCardStack';
-import { ProgressRail } from '../../components/today/ProgressRail';
 import { useToday } from '../../data/useToday';
+import { PLookPager } from '../PLookPager';
+import { PVerticalRail, RAIL_WIDTH } from '../PVerticalRail';
 import type { Outfit, WeatherContext } from '../../data/types';
 import { TodaySessionProvider } from '../../state/TodaySessionProvider';
 import { useTodaySession } from '../../state/todaySession';
 import { ProposalHeader } from '../ProposalHeader';
-import { PCommitRow } from '../PCommitRow';
+import { PLookSheet } from '../PLookSheet';
+import { useLookVerdicts } from '../LookVerdictsProvider';
 import { useSavedLooks } from '../SavedLooksProvider';
 
 export interface PTodayScreenProps {
@@ -101,21 +101,80 @@ function TodayContent({
 }) {
   const session = useTodaySession();
   const { isSaved, toggle } = useSavedLooks();
+  const { verdictFor, commit, isRejected } = useLookVerdicts();
 
-  // Completes the Ask handoff. Clearing the request in the shell is what keeps
-  // this from fighting the user if they then browse to another look.
+  // Rejecting removes the look from Today. The verdict is still recorded in
+  // LookVerdictsProvider, so a disliked-outfits view can read it later.
+  const visible = useMemo(
+    () => proposals.filter((o) => !isRejected(o.id)),
+    [proposals, isRejected],
+  );
+
+  // Rejecting the last card would leave lookIndex past the end of the list.
+  useEffect(() => {
+    if (visible.length === 0) return;
+    if (session.lookIndex > visible.length - 1) {
+      session.setLook(visible.length - 1);
+    }
+  }, [visible.length, session]);
+
+  // Which look's whole-look sheet is open, if any. Separate from the session's
+  // openPieceIndex: the garment sheet and the look sheet are two levels, and
+  // tapping a hotspot must not also open the look sheet behind it.
+  const [detailLook, setDetailLook] = useState<Outfit | null>(null);
+
+  // The pager needs a concrete page height; flex alone won't give paging a
+  // page size. Measured once, then re-measured only on a real change.
+  const [pageHeight, setPageHeight] = useState(0);
+  const onSectionLayout = (e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    if (h > 0 && Math.abs(h - pageHeight) > 1) setPageHeight(h);
+  };
+
+  // Completes the Ask handoff. Indexes into `visible`, since that is what the
+  // pager renders — a rejected look is no longer reachable by index.
   useEffect(() => {
     if (!requestedLook) return;
-    const i = proposals.findIndex((o) => o.id === requestedLook);
+    const i = visible.findIndex((o) => o.id === requestedLook);
     if (i >= 0) session.setLook(i);
     onLookShown?.();
-  }, [requestedLook, proposals, session, onLookShown]);
+  }, [requestedLook, visible, session, onLookShown]);
 
-  const look = proposals[session.lookIndex]!;
+  const safeIndex = Math.min(session.lookIndex, Math.max(visible.length - 1, 0));
+  const look = visible[safeIndex] ?? null;
   const openPiece =
-    session.openPieceIndex !== null
+    look && session.openPieceIndex !== null
       ? look.pieces[session.openPieceIndex] ?? null
       : null;
+
+  // Every look rejected. Not an error state — the user did this deliberately.
+  if (visible.length === 0) {
+    return (
+      <ScreenScaffold
+        wash={colour.washToday}
+        pillIcon={weather.icon}
+        pillLabel={weather.label}
+      >
+        <ProposalHeader
+          actionIcon="camera-plus"
+          onAction={onAdd}
+          actionLabel="Add a piece"
+          center="Fitcheck"
+          centerVariant="wordmark"
+          rightText={date}
+          topRule={3}
+        />
+        <View style={styles.empty}>
+          <AppText variant="metaItalic" style={styles.emptyLine}>
+            That's all of today's looks.
+          </AppText>
+          <AppText variant="microLabel" style={styles.emptySub}>
+            Ask the stylist for something else
+          </AppText>
+        </View>
+      </ScreenScaffold>
+    );
+  }
 
   return (
     <ScreenScaffold
@@ -129,40 +188,47 @@ function TodayContent({
         actionLabel="Add a piece"
         center="Fitcheck"
         centerVariant="wordmark"
-        rightText={`${session.lookIndex + 1} / ${proposals.length}`}
+        rightText={`${safeIndex + 1} / ${visible.length}`}
         topRule={3}
       />
 
-      <View style={styles.cardSection}>
-        <View style={styles.stackWrap}>
-          <OutfitCardStack>
-            <OutfitCard
-              outfit={look}
-              lookNumber={session.lookIndex + 1}
-              openPieceIndex={session.openPieceIndex}
-              pieceVerdict={session.pieceVerdict}
-              onPieceTap={session.openPiece}
-            />
-          </OutfitCardStack>
+      <View style={styles.cardSection} onLayout={onSectionLayout}>
+        <View style={styles.pagerWrap}>
+          <PLookPager
+            proposals={visible}
+            index={safeIndex}
+            onIndexChange={session.setLook}
+            pageHeight={pageHeight}
+            openPieceIndex={session.openPieceIndex}
+            pieceVerdict={session.pieceVerdict}
+            onPieceTap={session.openPiece}
+            verdictFor={verdictFor}
+            onCommit={commit}
+            isSaved={isSaved}
+            onToggleSave={toggle}
+            onOpenDetails={setDetailLook}
+          />
         </View>
 
-        <View style={styles.railArea}>
-          <ProgressRail
-            count={proposals.length}
-            activeIndex={session.lookIndex}
+        <View style={styles.railArea} pointerEvents="box-none">
+          <PVerticalRail
+            count={visible.length}
+            activeIndex={safeIndex}
             onJump={session.setLook}
           />
-          <AppText variant="microLabel" style={styles.swipeHint}>
-            Swipe the rail for the next look
-          </AppText>
         </View>
       </View>
 
-      <PCommitRow
-        verdict={session.lookVerdict()}
-        onCommit={session.commitLook}
-        saved={isSaved(look.id)}
-        onToggleSave={() => toggle(look)}
+      <AppText variant="microLabel" style={styles.swipeHint}>
+        {safeIndex < visible.length - 1
+          ? 'Swipe up for the next look'
+          : 'Swipe down to go back'}
+      </AppText>
+
+      <PLookSheet
+        outfit={detailLook}
+        weather={weather}
+        onClose={() => setDetailLook(null)}
       />
 
       <GarmentDetailSheet
@@ -184,26 +250,40 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+  },
+  emptyLine: {
+    textAlign: 'center',
+  },
+  emptySub: {
+    fontSize: 11.5,
+    letterSpacing: 1.6,
+    opacity: 0.7,
   },
   cardSection: {
     flex: 1,
-    paddingHorizontal: space.edge - 2,
+    paddingLeft: space.edge - 2,
+    // Room for the rail beside the card rather than under it, which is what
+    // gives the card back the ~56px the horizontal rail used to take.
+    paddingRight: space.edge - 2 + RAIL_WIDTH,
     paddingTop: 16,
   },
-  stackWrap: {
+  pagerWrap: {
     flex: 1,
-    marginBottom: 56,
   },
   railArea: {
     position: 'absolute',
-    left: space.edge - 2,
-    right: space.edge - 2,
-    bottom: 6,
+    right: space.edge - 2 - RAIL_WIDTH / 2,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
   },
   swipeHint: {
-    marginTop: 6,
-    fontSize: 10,
+    textAlign: 'center',
+    paddingTop: 8,
+    paddingBottom: 2,
+    fontSize: 11.5,
     letterSpacing: 1.6,
-    opacity: 0.8,
+    opacity: 0.7,
   },
 });

@@ -35,16 +35,18 @@
  * detail sheet, the masonry, the status pill, the press-scale feel. The brief
  * was experience, not visual design.
  */
-import { View } from 'react-native';
-import { ApolloProvider } from '@apollo/client/react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { apolloClient } from './src/apollo/client';
-import { useAppFonts } from './src/theme/fonts';
-import { colour } from './src/theme/tokens';
-import { ChromeProvider } from './src/proposal/ChromeContext';
-import { SavedLooksProvider } from './src/proposal/SavedLooksProvider';
-import { SwipeShell } from './src/proposal/SwipeShell';
+import { View } from "react-native";
+import { ApolloProvider } from "@apollo/client/react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { apolloClient } from "./src/apollo/client";
+import { useAppFonts } from "./src/theme/fonts";
+import { ThemeProvider } from "./src/theme/ThemeProvider";
+import { colour } from "./src/theme/tokens";
+import { ChromeProvider } from "./src/proposal/ChromeContext";
+import { LookVerdictsProvider } from "./src/proposal/LookVerdictsProvider";
+import { SavedLooksProvider } from "./src/proposal/SavedLooksProvider";
+import { SwipeShell } from "./src/proposal/SwipeShell";
 
 export default function App() {
   const [fontsLoaded, fontError] = useAppFonts();
@@ -57,15 +59,25 @@ export default function App() {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <SavedLooksProvider>
-            <ChromeProvider>
-              <SwipeShell />
-            </ChromeProvider>
-          </SavedLooksProvider>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
+      {/* Pinned to 'light' deliberately. The palette, surface tiers and
+          elevation system are complete and verified, but the ~28 components
+          that bake colours into StyleSheet.create have not been converted
+          yet. Following the system here would show a half-themed app, which
+          is worse than no dark mode. Change to "system" once the conversion
+          pass is done. */}
+      <ThemeProvider initial="light">
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SafeAreaProvider>
+            <SavedLooksProvider>
+              <LookVerdictsProvider>
+                <ChromeProvider>
+                  <SwipeShell />
+                </ChromeProvider>
+              </LookVerdictsProvider>
+            </SavedLooksProvider>
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
+      </ThemeProvider>
     </ApolloProvider>
   );
 }

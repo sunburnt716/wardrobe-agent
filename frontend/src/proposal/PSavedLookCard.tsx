@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 13,
     backgroundColor: colour.paperAlt,
-    borderRadius: radius.sheet - 2,
+    borderRadius: radius.bubble,
     padding: 12,
   },
   thumb: {
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   kicker: {
-    fontSize: 9.5,
+    fontSize: 11,
     letterSpacing: 1.4,
     color: colour.brand,
   },
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontFamily: 'Lora-Italic',
-    fontSize: 11,
-    color: colour.inkA(0.6),
+    fontSize: 11.5,
+    color: colour.inkA(0.7),
     marginTop: 7,
   },
 });

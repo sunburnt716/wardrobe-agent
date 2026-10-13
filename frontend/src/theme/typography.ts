@@ -28,8 +28,8 @@ export const textPresets = {
   /** "Fitcheck" masthead. */
   wordmark: {
     fontFamily: font.display,
-    fontSize: 17,
-    letterSpacing: -0.17,
+    fontSize: 19,
+    letterSpacing: -0.19,
     color: colour.brand,
   },
 
@@ -96,29 +96,49 @@ export const textPresets = {
     color: colour.brand,
   },
 
-  /** Uppercase micro-label — dateline date, position counter. */
+  /**
+   * Uppercase micro-label — dateline date, position counter.
+   *
+   * Was 10px / 1.8 letter-spacing. A serif at 10px, uppercase AND
+   * letter-spaced stacks three legibility costs: uppercase removes
+   * word-shape recognition, 10px erases the serifs' detail, and wide
+   * tracking removes word cohesion. Raised to 12px and the tracking cut to
+   * ~0.09em, which keeps the editorial character while making it readable.
+   * Full-strength ink, not an opacity — this tier is information.
+   */
   microLabel: {
     fontFamily: font.bodySemiBold,
-    fontSize: 10,
-    letterSpacing: 1.8,
+    fontSize: 12,
+    letterSpacing: 1.1,
     textTransform: 'uppercase',
     color: colour.ink,
   },
 
-  /** Uppercase micro-label, smaller — tab labels, tile meta. */
+  /**
+   * Uppercase micro-label, smaller — tab labels, tile meta.
+   *
+   * The 0.6 alpha here measured 3.94:1, under WCAG AA. It was missed in the
+   * first contrast pass because that pass only searched .tsx files and this
+   * is a .ts preset — so one failing value reached every tab label and tile
+   * meta line in the app. Now at the 0.7 floor.
+   */
   microLabelSm: {
     fontFamily: font.bodySemiBold,
-    fontSize: 9.5,
-    letterSpacing: 0.95,
+    fontSize: 11,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: colour.inkA(0.6),
+    color: colour.inkA(0.7),
   },
 
-  /** Status pill text (on the black pill). */
+  /**
+   * Status pill text (on the black pill). Was 8.5px — the smallest type in
+   * the app, carrying the weather, which is the single thing you most want
+   * while deciding what to wear.
+   */
   pillLabel: {
     fontFamily: font.bodySemiBold,
-    fontSize: 8.5,
-    letterSpacing: 0.85,
+    fontSize: 11,
+    letterSpacing: 0.7,
     textTransform: 'uppercase',
     color: colour.pillInk,
   },
@@ -126,7 +146,7 @@ export const textPresets = {
   /** Chip text. */
   chip: {
     fontFamily: font.bodySemiBold,
-    fontSize: 11.5,
+    fontSize: 12.5,
     color: colour.inkA(0.9),
   },
 

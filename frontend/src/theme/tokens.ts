@@ -7,10 +7,18 @@
 // --- Colour ---------------------------------------------------------------
 
 export const colour = {
-  /** The ONE brand colour. Masthead, active states, primary buttons, badges. */
+  /** The ONE brand colour. Fills, badges, rules, and display type on `paper`
+   *  or `washToday`. NOT for small text on the other washes — it measures
+   *  3.74:1 on `washCloset` and 3.62:1 on `washFits`, under the 4.5:1 that
+   *  text below 24px needs. Use `brandInk` there. */
   brand: '#b3512f',
   /** Brand, deepened — pressed / committed states only. */
   brandDeep: '#8f3d22',
+  /** Brand as SMALL TEXT. Same hue, dark enough to clear 4.5:1 on every wash
+   *  in the palette (worst case 5.71:1 on `washFits`). Separate from
+   *  `brandDeep` on purpose: that one means "pressed", this one means
+   *  "terracotta, but legible at label size". */
+  brandInk: '#86391f',
 
   /** Primary text and dark solid fills. `inkSolid` is the same role, used
    *  where a fully opaque dark fill reads better than layered opacity. */
@@ -41,8 +49,16 @@ export const colour = {
   magentaDeep: '#8d0040',
   positive: '#3b4f46',
 
-  /** Ink at opacity — for secondary text, hairline rules, faint fills.
-   *  rgba(32,30,29, a) — 32,30,29 is `ink`. */
+  /**
+   * Ink at opacity — for secondary text, hairline rules, faint fills.
+   * rgba(32,30,29, a) — 32,30,29 is `ink`.
+   *
+   * ALPHA FLOOR FOR TEXT: 0.7. Measured against every wash in this palette,
+   * `inkA(0.7)` clears WCAG AA 4.5:1 with its worst case at 5.18:1, while
+   * 0.6 drops to 3.94 and 0.5 to 3.00 — i.e. below AA, and 0.5 is below the
+   * 3:1 floor for large text too. Nine call sites were under 0.7 and have
+   * been raised. Rules and fills may go lower; text may not.
+   */
   inkA: (a: number) => `rgba(32,30,29,${a})`,
   /** Brand at opacity — tints, ghosted numerals, halo. rgba(179,81,47, a). */
   brandA: (a: number) => `rgba(179,81,47,${a})`,
@@ -61,11 +77,27 @@ export const space = {
 
 // --- Radius -------------------------------------------------------------
 
+/**
+ * Shape scale, graded so radius carries information.
+ *
+ * It previously ran 20 / 22 / 22 / 26 — four values within 6px, which meant a
+ * tile, a card and a chat bubble all read as the same class of object. Shape
+ * contrast is one of the strongest signals available for distinguishing
+ * object types (it is a core finding behind Material 3 Expressive), and a
+ * flat scale spends it for nothing.
+ *
+ * The steps now rank by how much the object owns the screen:
+ *   inline (14) < grouped (18) < primary (24) < modal (32) < pill
+ */
 export const radius = {
-  card: 22,
-  sheet: 26,
-  tile: 20,
-  bubble: 22,
+  /** Dense, inline, many-per-screen: closet tiles, small thumbnails. */
+  tile: 14,
+  /** Grouped items in a run: chat bubbles, back-issue cards. */
+  bubble: 18,
+  /** A primary surface the screen is about: the outfit card. */
+  card: 24,
+  /** Modal surfaces that sit above everything: the detail sheet. */
+  sheet: 32,
   /** Fully rounded — pills, circles, hotspots, avatars. */
   pill: 999,
 } as const;

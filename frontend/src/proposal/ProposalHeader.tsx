@@ -55,9 +55,13 @@ export function ProposalHeader({
             onPress={onAction}
             accessibilityRole="button"
             accessibilityLabel={actionLabel}
+            // 36px drawn, 44pt touchable. hitSlop buys Apple's minimum tap
+            // target without spending 8px of header height on it — which
+            // matters, because header chrome is the thing we are reducing.
+            hitSlop={4}
             style={styles.action}
           >
-            <Icon name={actionIcon} size={15} color={colour.paperAlt} />
+            <Icon name={actionIcon} size={19} color={colour.paperAlt} />
           </PressScale>
         </View>
 
@@ -66,17 +70,14 @@ export function ProposalHeader({
           style={
             centerVariant === 'wordmark'
               ? undefined
-              : { color: textColour, fontSize: 15 }
+              : { color: textColour, fontSize: 19 }
           }
         >
           {center}
         </AppText>
 
         <View style={[styles.side, styles.right]}>
-          <AppText
-            variant="microLabel"
-            style={{ color: textColour, opacity: 0.8 }}
-          >
+          <AppText variant="microLabel" style={{ color: textColour }}>
             {rightText ?? ''}
           </AppText>
         </View>
@@ -110,11 +111,12 @@ const styles = StyleSheet.create({
   right: {
     alignItems: 'flex-end',
   },
-  // 34px is the design's minimum hit target; the glyph is smaller than the
-  // circle on purpose so the target stays legal without looking heavy.
+  // Drawn at 36; hitSlop above extends the touch area to Apple's 44pt
+  // minimum. The design's own floor is 34px, which is under the platform
+  // guidance this proposal is following.
   action: {
-    width: 34,
-    height: 34,
+    width: 36,
+    height: 36,
     borderRadius: 999,
     backgroundColor: colour.brand,
     alignItems: 'center',

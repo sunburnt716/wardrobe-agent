@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   swipeHint: {
     marginTop: 6,
-    fontSize: 10,
+    fontSize: 11.5,
     letterSpacing: 1.6,
     opacity: 0.8,
   },

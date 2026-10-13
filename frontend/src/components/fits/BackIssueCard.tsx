@@ -63,7 +63,7 @@ export function BackIssueCard({
         size={34}
         iconSize={18}
         background="transparent"
-        color={colour.inkA(0.5)}
+        color={colour.inkA(0.7)}
         onPress={() => onRewear(entry.outfitId)}
       />
     </PressScale>
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 13,
     backgroundColor: colour.paperAlt,
-    borderRadius: radius.sheet - 2,
+    borderRadius: radius.bubble,
     padding: 12,
   },
   thumb: {
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   when: {
-    fontSize: 9.5,
+    fontSize: 11,
     letterSpacing: 1.4,
   },
   name: {
@@ -111,11 +111,11 @@ const styles = StyleSheet.create({
   },
   verdictText: {
     fontFamily: 'Lora-SemiBold',
-    fontSize: 10.5,
+    fontSize: 11.5,
   },
   weather: {
     fontFamily: 'Lora-Regular',
-    fontSize: 10.5,
-    color: colour.inkA(0.6),
+    fontSize: 11.5,
+    color: colour.inkA(0.7),
   },
 });

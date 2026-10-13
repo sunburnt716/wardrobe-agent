@@ -105,7 +105,7 @@ export function YieldingTabBar({
               </View>
               <AppText
                 variant="microLabelSm"
-                style={{ color: tint, fontSize: 10, letterSpacing: 1 }}
+                style={{ color: tint, fontSize: 11.5, letterSpacing: 0.9 }}
               >
                 {d.label}
               </AppText>
@@ -155,8 +155,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -5,
     right: -9,
-    minWidth: 15,
-    height: 15,
+    minWidth: 17,
+    height: 17,
     borderRadius: radius.pill,
     paddingHorizontal: 3,
     backgroundColor: colour.brand,
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: colour.paperAlt,
-    fontSize: 9,
+    fontSize: 10,
     letterSpacing: 0,
   },
 });

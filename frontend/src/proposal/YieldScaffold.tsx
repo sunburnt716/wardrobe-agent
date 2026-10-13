@@ -25,8 +25,16 @@ import { StatusPill } from '../components/layout/StatusPill';
 import { useChrome } from './ChromeContext';
 import { TAB_BAR_TOTAL } from './YieldingTabBar';
 
-/** Fallback until the header block reports its real height via onLayout. */
-const HEADER_ESTIMATE = 96;
+/**
+ * Extra room below the header block before content starts.
+ *
+ * NOTE: `headerH` is the measured height of the header block, and that block
+ * already carries `paddingTop: topPad` in its own style — so the measurement
+ * INCLUDES topPad. Adding topPad to it again double-counts the status-pill
+ * clearance and leaves a ~100px hole above the first row. That was the gap on
+ * Closet. Measure once, add once.
+ */
+const HEADER_GAP = 4;
 
 export interface YieldScaffoldProps {
   wash: string;
@@ -49,7 +57,7 @@ export function YieldScaffold({
 }: YieldScaffoldProps) {
   const insets = useSafeAreaInsets();
   const { hidden } = useChrome();
-  const [headerH, setHeaderH] = useState(HEADER_ESTIMATE);
+  const [headerH, setHeaderH] = useState(0);
 
   // Clears the status pill, exactly as ScreenScaffold does.
   const topPad = Math.max(space.datelineTop, insets.top + 44);
@@ -59,12 +67,19 @@ export function YieldScaffold({
     if (h > 0 && Math.abs(h - headerH) > 1) setHeaderH(h);
   };
 
-  // transform + opacity only. `headerH` and `topPad` are plain numbers, so the
-  // worklet closure stays serializable.
+  // transform + opacity only, and `headerH` is a plain number, so the worklet
+  // closure stays serializable. It already includes topPad, so translating by
+  // it clears the whole block — adding topPad would over-travel, for the same
+  // reason the padding double-counted.
   const headerStyle = useAnimatedStyle(() => ({
     opacity: 1 - hidden.value,
-    transform: [{ translateY: -hidden.value * (headerH + topPad) }],
+    transform: [{ translateY: -hidden.value * headerH }],
   }));
+
+  // Before the first onLayout there is no measurement; estimate from topPad
+  // plus a typical dateline + sub-row so the first frame is close, then the
+  // measurement corrects it.
+  const scrollTopPad = (headerH > 0 ? headerH : topPad + 84) + HEADER_GAP;
 
   return (
     <View style={[styles.root, { backgroundColor: wash }]}>
@@ -75,7 +90,7 @@ export function YieldScaffold({
       />
       <StatusPill icon={pillIcon} label={pillLabel} dark />
 
-      {children(topPad + headerH + 4)}
+      {children(scrollTopPad)}
 
       <Animated.View
         pointerEvents="box-none"

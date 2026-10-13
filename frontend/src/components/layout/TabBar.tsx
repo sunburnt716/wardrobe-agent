@@ -60,7 +60,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
               />
               <AppText
                 variant="microLabelSm"
-                style={{ color: colourFor, fontSize: 10, letterSpacing: 1 }}
+                style={{ color: colourFor, fontSize: 11.5, letterSpacing: 0.9 }}
               >
                 {label}
               </AppText>

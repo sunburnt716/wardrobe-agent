@@ -45,9 +45,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   label: {
-    fontSize: 9,
+    fontSize: 12,
     letterSpacing: 0.9,
-    color: colour.inkA(0.6),
+    color: colour.inkA(0.7),
   },
   circle: {
     width: 26,
