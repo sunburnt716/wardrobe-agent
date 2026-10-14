@@ -23,7 +23,7 @@ import { shadow } from '../theme/shadows';
 import type { Outfit, Verdict } from '../data/types';
 import { AppText } from '../components/primitives/AppText';
 import { Icon } from '../components/primitives/Icon';
-import { ImageSlot } from '../components/primitives/ImageSlot';
+import { LookStage } from '../components/primitives/LookStage';
 import { IconButton } from '../components/primitives/Pill';
 import { PressScale } from '../components/primitives/PressScale';
 import { Hotspot } from '../components/today/Hotspot';
@@ -90,13 +90,22 @@ export function PLookCard({
           </View>
 
           <View style={styles.imageArea}>
-            <View style={styles.composite}>
-              <ImageSlot
-                tint={outfit.washColorA}
-                icon="coat-hanger"
-                iconSize={54}
-                style={StyleSheet.absoluteFill}
-              />
+            <LookStage
+              from={outfit.washColorA}
+              to={outfit.washColorB}
+              paper={colour.paper}
+              gradientKey={outfit.id}
+              style={styles.composite}
+            >
+              {/* Placeholder until the extraction pipeline lands. Faint on
+                  purpose: it marks where the cutouts will float, without
+                  pretending to be one. */}
+              <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                <View style={styles.placeholder}>
+                  <Icon name="coat-hanger" size={54} color={colour.inkA(0.28)} />
+                </View>
+              </View>
+
               {outfit.pieces.map((piece, i) =>
                 piece.box ? (
                   <Hotspot
@@ -108,7 +117,7 @@ export function PLookCard({
                   />
                 ) : null,
               )}
-            </View>
+            </LookStage>
           </View>
         </Pressable>
 
@@ -171,6 +180,8 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colour.hairline,
     backgroundColor: colour.paper,
     overflow: 'hidden',
   },
@@ -186,23 +197,46 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 15,
+    paddingTop: 16,
     paddingHorizontal: 18,
+    // The composite starts immediately after this block, so without a bottom
+    // pad the meta line's descenders sit on the image edge. `metaItalic` is
+    // an italic serif with long descenders, which makes the collision worse
+    // than the type size suggests.
+    paddingBottom: 16,
   },
-  meta: { marginTop: 5 },
+  meta: { marginTop: 6 },
   imageArea: {
+    flex: 1,
+  },
+  /**
+   * The stage fills whatever the card gives it.
+   *
+   * It used to be `width: '100%'` + `aspectRatio: 402/440` + `maxHeight`.
+   * Once cards grew taller than that ratio, Yoga resolved the conflict by
+   * shrinking the box to satisfy the aspect ratio — so the wash became a
+   * narrow panel floating in the upper-left with dead space beside and below
+   * it. The 402x440 figure described the mock's composite image, not a shape
+   * the card has to be.
+   *
+   * Hotspot boxes are percentages OF this box, so they still land correctly;
+   * they simply map onto a taller stage.
+   */
+  composite: {
+    flex: 1,
+    alignSelf: 'stretch',
+  },
+  placeholder: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  composite: {
-    width: '100%',
-    aspectRatio: 402 / 440,
-    maxHeight: '100%',
-  },
   hint: {
-    paddingHorizontal: 16,
-    paddingBottom: 6,
+    paddingHorizontal: 18,
+    // Same problem on the other edge: the hint sat against the bottom of the
+    // image. The image now has clear air above and below it.
+    paddingTop: 14,
+    paddingBottom: 8,
   },
   // Inside the card, where OutfitCard's hint line used to sit.
   actions: {

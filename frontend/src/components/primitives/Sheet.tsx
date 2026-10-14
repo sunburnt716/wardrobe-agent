@@ -43,7 +43,15 @@ export function Sheet({ visible, onClose, accentBar = true, children }: SheetPro
   }, [visible, progress]);
 
   const scrimStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+  // Opacity as well as translate, and it matters more than it looks.
+  // The slide-out distance is derived from the panel's own measured height,
+  // so an EMPTY panel barely moves: GarmentDetailSheet renders null when no
+  // piece is open, collapsing the panel to just its 5px accent bar, which
+  // then translated 5.6px and sat visible at the foot of every screen as a
+  // stray terracotta line. Fading on `progress` makes "closed" mean
+  // invisible regardless of how tall the panel happens to be.
   const panelStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
     transform: [{ translateY: (1 - progress.value) * (panelH * 1.12) }],
   }));
 
@@ -79,6 +87,8 @@ const styles = StyleSheet.create({
   },
   panel: {
     position: 'absolute',
+    borderWidth: 1,
+    borderColor: colour.hairline,
     left: 10,
     right: 10,
     bottom: 10,

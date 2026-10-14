@@ -26,11 +26,18 @@ export const font = {
  */
 export const textPresets = {
   /** "Fitcheck" masthead. */
+  /**
+   * "Fitcheck" masthead. Uses `brandInk`, not `brand`: at 19px this is NOT
+   * large text by WCAG (that starts at 24px), so it needs 4.5:1. On the
+   * deepened `washToday` plain `brand` measures 3.50:1 — it was scraping by
+   * at 4.50 on the old pale wash and the darker ground broke it. Same hue,
+   * legible ground up.
+   */
   wordmark: {
     fontFamily: font.display,
     fontSize: 19,
     letterSpacing: -0.19,
-    color: colour.brand,
+    color: colour.brandInk,
   },
 
   /** Look title on the Today card, sheet has its own. */

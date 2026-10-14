@@ -85,6 +85,8 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colour.hairline,
     backgroundColor: colour.paper,
     overflow: 'hidden',
   },
@@ -115,10 +117,11 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   header: {
-    paddingTop: 15,
+    paddingTop: 16,
     paddingHorizontal: 18,
+    paddingBottom: 16,
   },
-  meta: { marginTop: 5 },
+  meta: { marginTop: 6 },
   imageArea: {
     flex: 1,
     alignItems: 'center',

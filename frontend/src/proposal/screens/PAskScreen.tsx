@@ -15,6 +15,7 @@
  */
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { colour } from '../../theme/tokens';
+
 import { DatelineHeader } from '../../components/layout/DatelineHeader';
 import { ScreenScaffold } from '../../components/layout/ScreenScaffold';
 import { AskInput } from '../../components/ask/AskInput';
@@ -30,8 +31,14 @@ export function PAskScreen({
 }) {
   const { messages, suggestions, thinking, send } = useAsk();
 
+
   return (
     <ScreenScaffold
+      // White, like every other screen. The per-look tint lived here for a
+      // while, but with a white page it could only ever read as a blue cast,
+      // and a page that is blue on one screen and white on the others is not
+      // cohesive. Per-look colour now lives only on the look's own stage,
+      // where it belongs to the garments rather than to the app.
       wash={colour.washAsk}
       pillIcon="sparkle"
       pillLabel={thinking ? 'Thinking…' : 'Stylist'}
@@ -58,5 +65,7 @@ export function PAskScreen({
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  thread: { flex: 1 },
+  // Keeps a permanent gap under the dateline hairline. Without it, scrolled
+  // messages run right up against the rule and read as clipped.
+  thread: { flex: 1, marginTop: 10 },
 });

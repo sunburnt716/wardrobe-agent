@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderRadius: 18,
+    borderRadius: radius.bubble,
   },
   badge: {
     position: 'absolute',

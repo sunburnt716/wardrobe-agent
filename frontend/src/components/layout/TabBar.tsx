@@ -33,7 +33,8 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
       <View style={[styles.card, shadow('tabBar')]}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;
-          const colourFor = focused ? colour.brand : colour.inkA(0.8);
+          // brandInk, not brand: plain brand is 3.76:1 on the beige chrome.
+          const colourFor = focused ? colour.brandInk : colour.inkA(0.8);
           const label = route.name.charAt(0).toUpperCase() + route.name.slice(1);
 
           return (
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colour.paper,
+    backgroundColor: colour.chrome,
     borderRadius: radius.card,
     paddingVertical: 4,
     paddingHorizontal: 6,

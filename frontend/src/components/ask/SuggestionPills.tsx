@@ -18,6 +18,11 @@ export function SuggestionPills({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      // A horizontal ScrollView sitting in a flex COLUMN will grow to take
+      // every spare pixel of vertical space, rendering its pills at the top
+      // of a tall invisible box. That was the large dead gap between the
+      // pills and the input. flexGrow: 0 makes it size to its content.
+      style={styles.scroller}
       contentContainerStyle={styles.row}
     >
       {suggestions.map((s) => (
@@ -34,13 +39,18 @@ export function SuggestionPills({
 }
 
 const styles = StyleSheet.create({
+  scroller: {
+    flexGrow: 0,
+  },
   row: {
     gap: 7,
     paddingHorizontal: 20,
     paddingVertical: 4,
   },
   pill: {
-    backgroundColor: 'rgba(253,250,244,0.9)',
+    // Chrome, not paper: a white pill on a white page has nothing to
+    // separate it but its shadow.
+    backgroundColor: colour.chrome,
     paddingVertical: 8,
     paddingHorizontal: 13,
     borderRadius: radius.pill,

@@ -34,6 +34,12 @@ type Recipe = {
  * tier an object is on rather than merely that it has one.
  *
  * Order, lowest to highest: badge < soft < card < tabBar < sheet.
+ *
+ * `soft` and `card` were briefly strengthened when the palette went
+ * white-on-white, then returned to these values once cards gained a
+ * `colour.hairline` border. The border defines the EDGE and the shadow
+ * gives the lift — two jobs, two mechanisms. Overdriving the shadow to do
+ * both made cards look like they were hovering.
  */
 const RECIPES = {
   /** Tier 1 — a small object attached to its parent. Verdict badges. */

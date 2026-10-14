@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderRadius: radius.pill,
-    backgroundColor: colour.paperAlt,
+    backgroundColor: colour.chrome,
     justifyContent: 'center',
     paddingHorizontal: 16,
   },

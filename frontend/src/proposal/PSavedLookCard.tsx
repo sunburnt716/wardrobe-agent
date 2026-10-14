@@ -28,7 +28,7 @@ export function PSavedLookCard({
         tint={outfit.washColorA}
         icon="coat-hanger"
         iconSize={34}
-        borderRadius={16}
+        borderRadius={radius.tile}
         style={styles.thumb}
       />
 
@@ -61,7 +61,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 13,
-    backgroundColor: colour.paperAlt,
+    borderWidth: 1,
+    borderColor: colour.hairline,
+    backgroundColor: colour.paper,
     borderRadius: radius.bubble,
     padding: 12,
   },

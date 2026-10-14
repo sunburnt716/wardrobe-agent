@@ -22,6 +22,19 @@ export interface ScreenScaffoldProps {
   light?: boolean;
   /** Set false on screens whose content scrolls edge-to-edge under the pill. */
   padContent?: boolean;
+  /**
+   * Set false to let content run to the bottom of the screen, BEHIND the
+   * floating tab bar, instead of stopping above it. For a scroll whose next
+   * item should visibly continue under the bar — the bar itself then acts as
+   * the "there is more below" affordance.
+   */
+  padBottom?: boolean;
+  /**
+   * Full-bleed layer painted behind everything, including the header and the
+   * status pill. For a screen whose background is a gradient rather than the
+   * flat `wash`. Optional — omitting it keeps the flat wash exactly as before.
+   */
+  backdrop?: ReactNode;
   children: ReactNode;
 }
 
@@ -32,6 +45,8 @@ export function ScreenScaffold({
   pillDark = true,
   light = false,
   padContent = true,
+  padBottom = true,
+  backdrop,
   children,
 }: ScreenScaffoldProps) {
   const insets = useSafeAreaInsets();
@@ -39,6 +54,7 @@ export function ScreenScaffold({
 
   return (
     <View style={[styles.root, { backgroundColor: wash }]}>
+      {backdrop}
       <StatusBar
         barStyle={light ? 'light-content' : 'dark-content'}
         translucent
@@ -49,7 +65,7 @@ export function ScreenScaffold({
         style={[
           styles.content,
           padContent && { paddingTop: topPad },
-          { paddingBottom: TAB_BAR_SPACE + insets.bottom },
+          padBottom && { paddingBottom: TAB_BAR_SPACE + insets.bottom },
         ]}
       >
         {children}

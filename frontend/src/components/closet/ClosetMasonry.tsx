@@ -9,7 +9,9 @@ import { space } from '../../theme/tokens';
 import type { ClosetItem } from '../../data/types';
 import { GarmentTile } from './GarmentTile';
 
-const CAPTION_ESTIMATE = 56;
+// Caption block height used only to balance the two columns. Must track
+// GarmentTile's caption padding + type, or the columns drift uneven.
+const CAPTION_ESTIMATE = 62;
 
 export function ClosetMasonry({ items }: { items: ClosetItem[] }) {
   const columns: [ClosetItem[], ClosetItem[]] = [[], []];

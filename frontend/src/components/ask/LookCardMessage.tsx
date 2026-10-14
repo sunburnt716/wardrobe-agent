@@ -9,7 +9,8 @@ import { shadow } from '../../theme/shadows';
 import type { ChatLookCard } from '../../data/types';
 import { AppText } from '../primitives/AppText';
 import { Icon } from '../primitives/Icon';
-import { ImageSlot } from '../primitives/ImageSlot';
+import { Icon as PlaceholderIcon } from '../primitives/Icon';
+import { LookStage } from '../primitives/LookStage';
 import { PressScale } from '../primitives/PressScale';
 
 export function LookCardMessage({
@@ -24,13 +25,21 @@ export function LookCardMessage({
       style={[styles.card, shadow('soft')]}
       onPress={() => onOpen(card.outfitId)}
     >
-      <ImageSlot tint={card.tintHint} icon="coat-hanger" iconSize={40} style={styles.image}>
+      <LookStage
+        from={card.tintHint}
+        paper={colour.paper}
+        gradientKey={card.outfitId}
+        style={styles.image}
+      >
+        <View style={styles.placeholder} pointerEvents="none">
+          <PlaceholderIcon name="coat-hanger" size={40} color={colour.inkA(0.28)} />
+        </View>
         <View style={styles.count}>
           <AppText style={styles.countText} variant="microLabelSm">
             {`${card.pieceCount} pieces`}
           </AppText>
         </View>
-      </ImageSlot>
+      </LookStage>
 
       <View style={styles.footer}>
         <View style={styles.footerText}>
@@ -51,12 +60,20 @@ const styles = StyleSheet.create({
   card: {
     alignSelf: 'flex-start',
     width: '78%',
+    borderWidth: 1,
+    borderColor: colour.hairline,
     borderRadius: radius.bubble,
-    backgroundColor: colour.paperAlt,
+    backgroundColor: colour.paper,
     overflow: 'hidden',
   },
   image: {
     height: 150,
+    width: '100%',
+  },
+  placeholder: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   count: {
     position: 'absolute',

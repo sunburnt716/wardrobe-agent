@@ -46,7 +46,9 @@ export function GarmentTile({ item }: { item: ClosetItem }) {
 const styles = StyleSheet.create({
   tile: {
     borderRadius: radius.tile,
-    backgroundColor: colour.paperAlt,
+    borderWidth: 1,
+    borderColor: colour.hairline,
+    backgroundColor: colour.paper,
     overflow: 'hidden',
   },
   badge: {
@@ -67,9 +69,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
   },
   caption: {
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 12,
+    paddingHorizontal: 13,
+    // 10 put the name's ascenders almost against the image edge. `tileName`
+    // has a 1.15 line-height, so its box sits tight to the glyphs and the
+    // padding is doing all the separating on its own.
+    paddingTop: 15,
+    paddingBottom: 13,
   },
-  meta: { marginTop: 5 },
+  meta: { marginTop: 6 },
 });

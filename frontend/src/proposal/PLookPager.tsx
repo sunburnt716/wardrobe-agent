@@ -31,8 +31,15 @@ import type { Outfit, Verdict } from '../data/types';
 import { PLookCard } from './PLookCard';
 import type { LookVerdict } from './LookVerdictsProvider';
 
-/** How much of the next card stays visible below the current one. */
-const PEEK = 56;
+/**
+ * How much of the next card shows ABOVE the nav bar before running behind it.
+ *
+ * The scroll now extends to the bottom of the screen, under the floating
+ * bar, so the next card is literally cut off by it. That is the affordance —
+ * a card disappearing behind the bar says "there is more below" better than
+ * a line of text saying so, which is what this replaced.
+ */
+const PEEK = 26;
 /** Breathing room between cards, so the peek reads as a separate object. */
 const CARD_GAP = 14;
 
@@ -50,6 +57,9 @@ export interface PLookPagerProps {
   onIndexChange: (i: number) => void;
   /** Measured height of one page. Pages render only once this is known. */
   pageHeight: number;
+  /** Height of the floating nav bar plus its safe-area padding. The active
+   *  card stops above this so its action row is never behind the bar. */
+  bottomInset: number;
   openPieceIndex: number | null;
   pieceVerdict: (i: number) => Verdict | null;
   onPieceTap: (i: number) => void;
@@ -66,6 +76,7 @@ export function PLookPager({
   index,
   onIndexChange,
   pageHeight,
+  bottomInset,
   openPieceIndex,
   pieceVerdict,
   onPieceTap,
@@ -77,10 +88,10 @@ export function PLookPager({
 }: PLookPagerProps) {
   const ref = useRef<ScrollView>(null);
 
-  // Each card is shorter than the viewport by PEEK, so the top of the next
-  // card is always visible. That sliver is the affordance: it shows there is
-  // more below without needing a hint line to say so.
-  const cardHeight = Math.max(pageHeight - PEEK, 1);
+  // The card ends above the nav bar, so its buttons are always reachable.
+  // Everything past that — the gap and the head of the next card — falls
+  // behind the bar.
+  const cardHeight = Math.max(pageHeight - bottomInset - PEEK, 1);
   const interval = cardHeight + CARD_GAP;
 
   // Follow the session index — this is how a rail tap moves the pager.
@@ -113,7 +124,9 @@ export function PLookPager({
       scrollEventThrottle={16}
       style={styles.fill}
       // Lets the last card still reach the top of the viewport.
-      contentContainerStyle={{ paddingBottom: PEEK }}
+      // Lets the last card snap to the top with the bar still covering the
+      // space below it.
+      contentContainerStyle={{ paddingBottom: bottomInset + PEEK }}
     >
       {proposals.map((look, i) => (
         <View

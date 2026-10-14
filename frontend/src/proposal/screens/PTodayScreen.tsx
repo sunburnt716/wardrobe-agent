@@ -13,6 +13,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colour, space } from '../../theme/tokens';
 import { AppText } from '../../components/primitives/AppText';
 import { ScreenScaffold } from '../../components/layout/ScreenScaffold';
@@ -20,6 +21,7 @@ import { GarmentDetailSheet } from '../../components/today/GarmentDetailSheet';
 import { useToday } from '../../data/useToday';
 import { PLookPager } from '../PLookPager';
 import { PVerticalRail, RAIL_WIDTH } from '../PVerticalRail';
+import { TAB_BAR_TOTAL } from '../YieldingTabBar';
 import type { Outfit, WeatherContext } from '../../data/types';
 import { TodaySessionProvider } from '../../state/TodaySessionProvider';
 import { useTodaySession } from '../../state/todaySession';
@@ -99,6 +101,10 @@ function TodayContent({
   requestedLook: string | null;
   onLookShown?: () => void;
 }) {
+  const insets = useSafeAreaInsets();
+  // What the floating nav bar occupies at the foot of the screen.
+  const bottomInset = TAB_BAR_TOTAL + insets.bottom;
+
   const session = useTodaySession();
   const { isSaved, toggle } = useSavedLooks();
   const { verdictFor, commit, isRejected } = useLookVerdicts();
@@ -181,6 +187,10 @@ function TodayContent({
       wash={colour.washToday}
       pillIcon={weather.icon}
       pillLabel={weather.label}
+      // The look pager runs to the bottom of the screen so cards continue
+      // behind the floating nav bar. The pager reserves the bar's height
+      // itself, so the active card's buttons still clear it.
+      padBottom={false}
     >
       <ProposalHeader
         actionIcon="camera-plus"
@@ -199,6 +209,7 @@ function TodayContent({
             index={safeIndex}
             onIndexChange={session.setLook}
             pageHeight={pageHeight}
+            bottomInset={bottomInset}
             openPieceIndex={session.openPieceIndex}
             pieceVerdict={session.pieceVerdict}
             onPieceTap={session.openPiece}
@@ -210,7 +221,10 @@ function TodayContent({
           />
         </View>
 
-        <View style={styles.railArea} pointerEvents="box-none">
+        <View
+          style={[styles.railArea, { bottom: bottomInset }]}
+          pointerEvents="box-none"
+        >
           <PVerticalRail
             count={visible.length}
             activeIndex={safeIndex}
@@ -218,12 +232,6 @@ function TodayContent({
           />
         </View>
       </View>
-
-      <AppText variant="microLabel" style={styles.swipeHint}>
-        {safeIndex < visible.length - 1
-          ? 'Swipe up for the next look'
-          : 'Swipe down to go back'}
-      </AppText>
 
       <PLookSheet
         outfit={detailLook}
@@ -277,13 +285,5 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     justifyContent: 'center',
-  },
-  swipeHint: {
-    textAlign: 'center',
-    paddingTop: 8,
-    paddingBottom: 2,
-    fontSize: 11.5,
-    letterSpacing: 1.6,
-    opacity: 0.7,
   },
 });

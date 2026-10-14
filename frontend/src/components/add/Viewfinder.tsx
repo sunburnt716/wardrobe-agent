@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderColor: 'rgba(0,136,176,0.9)',
-    borderRadius: 14,
+    borderRadius: radius.bubble,
   },
   label: {
     position: 'absolute',

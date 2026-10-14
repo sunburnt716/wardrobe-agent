@@ -61,6 +61,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: radius.pill,
-    backgroundColor: colour.paperAlt,
+    backgroundColor: colour.paper,
   },
 });

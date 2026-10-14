@@ -25,15 +25,115 @@ export const colour = {
   ink: '#201e1d',
   inkSolid: '#2b2724',
 
-  /** Card / sheet surfaces. */
-  paper: '#fffdf9',
+  /**
+   * Card / sheet surfaces — every raised object: outfit cards, sheets, the
+   * tab bar, closet tiles, list rows.
+   *
+   * Was #fffdf9, which is white with only 6 points of warmth (R-B). Against
+   * `washCloset` that is a 1.34 luminance jump and reads as a cut-out rather
+   * than a sheet of paper. This is 15 points warm — 2.5x — so it harmonises
+   * A hint of beige on a white page — enough to be a surface, not enough to
+   * stop reading as white. Lift over the page is 1.087.
+   *
+   * This completes a three-step ground scale, which is what the palette was
+   * missing when the card was pure white:
+   *
+   *   page    #ffffff   1.000   the ground
+   *   paper   #f9f5ed   1.087   content sits on this
+   *   chrome  #e4ddd0   1.350   persistent furniture
+   *
+   * A card is now separated three ways at once, each doing a different job:
+   * the TONE says it is a different surface, the `hairline` border says
+   * exactly where it ends, and the shadow says how far off the page it sits.
+   * White-on-white asked the shadow to do all three, which is why cards were
+   * hard to find.
+   *
+   * Warmer options, all clearing AA: #f7f2e7, #f4eee1. Cooler: #fbf8f2.
+   */
+  paper: '#f9f5ed',
+  /**
+   * Persistent chrome: the floating nav bar, the Ask input, suggestion
+   * pills. The beige the cards used to carry.
+   *
+   * Content surfaces are white and furniture is beige, which is what keeps
+   * the two legible against each other now that the page is also white. It
+   * also gives the chrome a constant identity — the nav bar looks the same
+   * on every screen regardless of what the content is doing.
+   *
+   * Text on this must use `brandInk`, not `brand`: plain brand measures
+   * 3.76:1 here, under AA.
+   */
+  chrome: '#e4ddd0',
+  /**
+   * Card edge. 1px, warm, barely there.
+   *
+   * This is a DEPARTURE from the handoff spec, which says "no hairline boxes
+   * anywhere for layout" and "rules never around content". That rule was
+   * sound while every card had a tonal step under it — a near-white card on
+   * a tinted wash separates on its own and a border would have been noise.
+   * With a white card on a white page the step is 1.000 and shadow alone was
+   * not enough to say where a card starts.
+   *
+   * So the rule's premise changed, not the rule's reasoning. If cards ever
+   * regain a tonal ground, this should go away again.
+   */
+  hairline: 'rgba(32,30,29,0.12)',
+  /**
+   * The GROUND the app sits on, and text/icons drawn ON dark fills (a label
+   * on a brand button, the icon in a verdict badge). Deliberately NOT
+   * softened with `paper`: it measures 4.88:1 on `brand`, so darkening it
+   * would push button labels under the 4.5:1 floor. Two roles, two tokens.
+   */
   paperAlt: '#fdfaf4',
 
-  /** Per-screen wash backgrounds. */
-  washToday: '#f8f0e8',
-  washCloset: '#e7dcc6',
-  washAsk: '#dde2ef',
-  washFits: '#ddd9d4',
+  /**
+   * Per-screen wash backgrounds — the app's ground, behind every card.
+   *
+   * Deepened so cards read as raised. The old set gave the card wildly
+   * different apparent elevation per screen: 1.07 lift on Today (whose wash
+   * was itself nearly white, so cards barely separated) against 1.33 on
+   * Fits. Same card, same shadow, different height — which is a large part
+   * of what made the app feel unsettled.
+   *
+   * Now 1.37 / 1.42 / 1.44 / 1.46 — a 0.09 spread instead of 0.26, so a card
+   * sits at the same height everywhere.
+   *
+   * HOW DARK THESE CAN GO IS CAPPED BY TEXT, not by taste. These are dark
+   * grounds carrying DARK text, so every step down costs legibility. The
+   * binding constraint is `brandInk` (the active filter word), which fails
+   * AA before `inkA(0.7)` does. Worst case in this set is 4.93:1 — real
+   * margin over 4.5, but not much room to go darker. Re-check with the
+   * contrast script before deepening any of these further.
+   *
+   * NEUTRALISED at constant luminance. The deepened set above was also more
+   * SATURATED (chroma ~44 on Today and Closet), which read as tan and gold
+   * rather than as paper. Each wash is now blended toward a grey of exactly
+   * the same relative luminance, keeping 45% of its original chroma.
+   *
+   * Because luminance is preserved, this costs nothing: card lift and every
+   * text ratio are unchanged to three decimal places. Hue is a free dial here
+   * and contrast is not — worth remembering, since it means the look can be
+   * retuned without redoing any of the accessibility work.
+   *
+   * To go further, blend further toward the same greys:
+   *   30% chroma -> #dbd6ce / #d6d3c9 / #cfd2d7 / #d1cfcd
+   *   18% chroma -> #d9d6d1 / #d5d3cd / #d0d2d5 / #d0cfce
+   *
+   * NOW WHITE. The tinted grounds were replaced by a white page with beige
+   * cards, which inverts the figure/ground relationship.
+   *
+   * CONSEQUENCE, stated plainly: the per-screen colour identity is gone.
+   * These four tokens are kept as separate entries rather than collapsed
+   * into one so that bringing it back is a value change, not a refactor —
+   * every screen still asks for its own wash by name.
+   *
+   * Per-LOOK colour survives, and is now the only colour the app varies:
+   * LookStage still washes a look's stage from its own garment colours.
+   */
+  washToday: '#ffffff',
+  washCloset: '#ffffff',
+  washAsk: '#ffffff',
+  washFits: '#ffffff',
   /** Add is the one dark surface in the app. */
   washAdd: '#2a2725',
 
@@ -87,17 +187,27 @@ export const space = {
  * flat scale spends it for nothing.
  *
  * The steps now rank by how much the object owns the screen:
- *   inline (14) < grouped (18) < primary (24) < modal (32) < pill
+ *   inline (11) < grouped (14) < primary (19) < modal (26) < pill
+ *
+ * Sharpened from 14/18/24/32. Softer corners read as friendly-generic; these
+ * crisper ones sit better against the newspaper furniture — the 4px rule, the
+ * hairline, the justified dateline — which is the app's actual character.
+ * This runs slightly under the original handoff spec ("30px radius on sheets,
+ * 20-24px on cards"); that was deliberate, not drift.
+ *
+ * `pill` stays fully round, so ACTIONS keep their shape while SURFACES get
+ * sharper. That contrast is now doing work: anything round is pressable,
+ * anything cornered is a surface.
  */
 export const radius = {
   /** Dense, inline, many-per-screen: closet tiles, small thumbnails. */
-  tile: 14,
+  tile: 11,
   /** Grouped items in a run: chat bubbles, back-issue cards. */
-  bubble: 18,
+  bubble: 14,
   /** A primary surface the screen is about: the outfit card. */
-  card: 24,
+  card: 19,
   /** Modal surfaces that sit above everything: the detail sheet. */
-  sheet: 32,
+  sheet: 26,
   /** Fully rounded — pills, circles, hotspots, avatars. */
   pill: 999,
 } as const;

@@ -72,7 +72,7 @@ export function ReadFromPhotoSheet({
 
 const styles = StyleSheet.create({
   sheet: {
-    backgroundColor: colour.paperAlt,
+    backgroundColor: colour.paper,
     borderTopLeftRadius: radius.sheet + 4,
     borderTopRightRadius: radius.sheet + 4,
     paddingHorizontal: space.edge,

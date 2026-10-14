@@ -48,7 +48,11 @@ const styles = StyleSheet.create({
   },
   agent: {
     alignSelf: 'flex-start',
-    backgroundColor: colour.paperAlt,
+    backgroundColor: colour.paper,
+    // Agent bubbles only. A user bubble is a filled terracotta shape and
+    // already has an edge of its own.
+    borderWidth: 1,
+    borderColor: colour.hairline,
     borderRadius: radius.bubble,
     borderBottomLeftRadius: 6,
   },

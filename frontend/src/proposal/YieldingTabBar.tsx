@@ -7,6 +7,11 @@
  *    moved an Add button out of the tab bar for exactly this reason).
  *    Instagram did the same in 2025-26, moving `+` to the header. Add now
  *    lives in ProposalHeader's left slot.
+ * The terracotta rule under the active tab is gone; the active state is
+ * carried by colour alone (brandInk icon + label against inkA(0.8)). One
+ * indicator is enough, and the rule read as a stray bar across the bottom of
+ * the app.
+ *
  * 2. It YIELDS on scroll, sliding down out of the way and fading. iOS's 2025
  *    design language does this natively (the tab bar floats above content and
  *    can minimise on scroll); Pinterest has done it for years.
@@ -78,7 +83,8 @@ export function YieldingTabBar({
       <View style={[styles.card, shadow('tabBar')]}>
         {DESTINATIONS.map((d, i) => {
           const focused = index === i;
-          const tint = focused ? colour.brand : colour.inkA(0.8);
+          // brandInk, not brand: plain brand is 3.76:1 on the beige chrome.
+          const tint = focused ? colour.brandInk : colour.inkA(0.8);
           // Fits owns saved looks, so the count belongs on that tab.
           const badge = d.key === 'fits' && savedCount > 0 ? savedCount : null;
 
@@ -109,12 +115,6 @@ export function YieldingTabBar({
               >
                 {d.label}
               </AppText>
-              <View
-                style={[
-                  styles.rule,
-                  { width: focused ? 18 : 0, backgroundColor: colour.brand },
-                ]}
-              />
             </PressScale>
           );
         })}
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colour.paper,
+    backgroundColor: colour.chrome,
     borderRadius: radius.card,
     paddingVertical: 4,
     paddingHorizontal: 6,
@@ -146,10 +146,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
     paddingVertical: 6,
-  },
-  rule: {
-    height: 2,
-    borderRadius: radius.pill,
   },
   badge: {
     position: 'absolute',
