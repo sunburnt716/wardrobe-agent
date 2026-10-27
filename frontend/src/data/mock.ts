@@ -34,6 +34,12 @@ const box = (
 
 const trench = g({
   id: 'garment-trench',
+  warmthRating: 3,
+  formalityBand: 4,
+  waterResistant: true,
+  ageDays: 420,
+  outfitCount: 6,
+  wornCount: 4,
   name: 'Stone trench',
   category: 'Outerwear',
   layer: 'outer',
@@ -47,6 +53,12 @@ const trench = g({
 
 const oxford = g({
   id: 'garment-oxford',
+  warmthRating: 2,
+  formalityBand: 4,
+  waterResistant: false,
+  ageDays: 800,
+  outfitCount: 9,
+  wornCount: 7,
   name: 'White oxford',
   category: 'Top',
   layer: 'base',
@@ -60,6 +72,12 @@ const oxford = g({
 
 const oatmealKnit = g({
   id: 'garment-oatmeal-knit',
+  warmthRating: 4,
+  formalityBand: 3,
+  waterResistant: false,
+  ageDays: 260,
+  outfitCount: 5,
+  wornCount: 4,
   name: 'Oatmeal knit',
   category: 'Mid layer',
   layer: 'mid',
@@ -73,6 +91,12 @@ const oatmealKnit = g({
 
 const woolTrousers = g({
   id: 'garment-wool-trousers',
+  warmthRating: 3,
+  formalityBand: 4,
+  waterResistant: false,
+  ageDays: 610,
+  outfitCount: 8,
+  wornCount: 6,
   name: 'Charcoal wool trousers',
   category: 'Bottom',
   layer: 'bottom',
@@ -86,6 +110,12 @@ const woolTrousers = g({
 
 const navyTee = g({
   id: 'garment-navy-tee',
+  warmthRating: 1,
+  formalityBand: 2,
+  waterResistant: false,
+  ageDays: 150,
+  outfitCount: 11,
+  wornCount: 9,
   name: 'Navy tee',
   category: 'Base',
   layer: 'base',
@@ -99,6 +129,12 @@ const navyTee = g({
 
 const indigoJeans = g({
   id: 'garment-indigo-jeans',
+  warmthRating: 2,
+  formalityBand: 2,
+  waterResistant: false,
+  ageDays: 980,
+  outfitCount: 14,
+  wornCount: 12,
   name: 'Indigo straight jeans',
   category: 'Bottom',
   layer: 'bottom',
@@ -112,6 +148,12 @@ const indigoJeans = g({
 
 const charcoalKnit = g({
   id: 'garment-charcoal-knit',
+  warmthRating: 4,
+  formalityBand: 3,
+  waterResistant: false,
+  ageDays: 300,
+  outfitCount: 4,
+  wornCount: 3,
   name: 'Charcoal knit',
   category: 'Mid layer',
   layer: 'mid',
@@ -125,6 +167,12 @@ const charcoalKnit = g({
 
 const whiteSneakers = g({
   id: 'garment-white-sneakers',
+  warmthRating: 2,
+  formalityBand: 2,
+  waterResistant: false,
+  ageDays: 540,
+  outfitCount: 13,
+  wornCount: 11,
   name: 'White sneakers',
   category: 'Shoes',
   layer: 'footwear',

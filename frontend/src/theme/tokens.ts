@@ -119,8 +119,24 @@ export const colour = {
    *   30% chroma -> #dbd6ce / #d6d3c9 / #cfd2d7 / #d1cfcd
    *   18% chroma -> #d9d6d1 / #d5d3cd / #d0d2d5 / #d0cfce
    *
-   * NOW WHITE. The tinted grounds were replaced by a white page with beige
-   * cards, which inverts the figure/ground relationship.
+   * NOW WHITE — but a warm white, not a neutral one.
+   *
+   * Pure #ffffff measured neutral and still read faintly BLUE here, because
+   * it sits surrounded by warm beige cards and simultaneous contrast pushes
+   * a neutral toward the complement of whatever surrounds it. Three points
+   * of warmth (R-B = 5) cancels that without the page reading as cream.
+   *
+   * The warmth ladder is what keeps the three grounds distinct as surfaces
+   * rather than just as tones:
+   *
+   *   page    #fffdfa   warmth  5
+   *   paper   #f9f5ed   warmth 12
+   *   chrome  #e4ddd0   warmth 20
+   *
+   * Warming the page moves it TOWARD the card, so it costs lift: 1.087 at
+   * pure white, 1.071 here. Going much further would start dissolving the
+   * card into the page again, which is the thing the border and shadow were
+   * added to fix.
    *
    * CONSEQUENCE, stated plainly: the per-screen colour identity is gone.
    * These four tokens are kept as separate entries rather than collapsed
@@ -130,10 +146,10 @@ export const colour = {
    * Per-LOOK colour survives, and is now the only colour the app varies:
    * LookStage still washes a look's stage from its own garment colours.
    */
-  washToday: '#ffffff',
-  washCloset: '#ffffff',
-  washAsk: '#ffffff',
-  washFits: '#ffffff',
+  washToday: '#fffdfa',
+  washCloset: '#fffdfa',
+  washAsk: '#fffdfa',
+  washFits: '#fffdfa',
   /** Add is the one dark surface in the app. */
   washAdd: '#2a2725',
 

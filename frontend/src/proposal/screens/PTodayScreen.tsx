@@ -17,7 +17,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colour, space } from '../../theme/tokens';
 import { AppText } from '../../components/primitives/AppText';
 import { ScreenScaffold } from '../../components/layout/ScreenScaffold';
-import { GarmentDetailSheet } from '../../components/today/GarmentDetailSheet';
 import { useToday } from '../../data/useToday';
 import { PLookPager } from '../PLookPager';
 import { PVerticalRail, RAIL_WIDTH } from '../PVerticalRail';
@@ -26,7 +25,6 @@ import type { Outfit, WeatherContext } from '../../data/types';
 import { TodaySessionProvider } from '../../state/TodaySessionProvider';
 import { useTodaySession } from '../../state/todaySession';
 import { ProposalHeader } from '../ProposalHeader';
-import { PLookSheet } from '../PLookSheet';
 import { useLookVerdicts } from '../LookVerdictsProvider';
 import { useSavedLooks } from '../SavedLooksProvider';
 
@@ -124,10 +122,24 @@ function TodayContent({
     }
   }, [visible.length, session]);
 
-  // Which look's whole-look sheet is open, if any. Separate from the session's
-  // openPieceIndex: the garment sheet and the look sheet are two levels, and
-  // tapping a hotspot must not also open the look sheet behind it.
-  const [detailLook, setDetailLook] = useState<Outfit | null>(null);
+  // Whether the card on screen is showing its back, and what is on it.
+  // `null` focusPiece means the back shows the whole look; a piece index
+  // means it shows that garment. The session still owns openPieceIndex so
+  // the hotspot renders active and votePiece targets the right garment.
+  const [flipped, setFlipped] = useState(false);
+
+  const flipToLook = () => {
+    session.closePiece();
+    setFlipped(true);
+  };
+  const flipToPiece = (i: number) => {
+    session.openPiece(i);
+    setFlipped(true);
+  };
+  const flipBack = () => {
+    setFlipped(false);
+    session.closePiece();
+  };
 
   // The pager needs a concrete page height; flex alone won't give paging a
   // page size. Measured once, then re-measured only on a real change.
@@ -145,6 +157,12 @@ function TodayContent({
     if (i >= 0) session.setLook(i);
     onLookShown?.();
   }, [requestedLook, visible, session, onLookShown]);
+
+  // Changing look always returns to the front — arriving on a new card
+  // already reversed would be disorienting.
+  useEffect(() => {
+    setFlipped(false);
+  }, [session.lookIndex]);
 
   const safeIndex = Math.min(session.lookIndex, Math.max(visible.length - 1, 0));
   const look = visible[safeIndex] ?? null;
@@ -212,12 +230,22 @@ function TodayContent({
             bottomInset={bottomInset}
             openPieceIndex={session.openPieceIndex}
             pieceVerdict={session.pieceVerdict}
-            onPieceTap={session.openPiece}
+            onPieceTap={flipToPiece}
             verdictFor={verdictFor}
             onCommit={commit}
             isSaved={isSaved}
             onToggleSave={toggle}
-            onOpenDetails={setDetailLook}
+            onOpenDetails={flipToLook}
+            weather={weather}
+            flippedIndex={flipped ? safeIndex : null}
+            onFlipBack={flipBack}
+            focusPiece={openPiece}
+            focusVerdict={
+              session.openPieceIndex !== null
+                ? session.pieceVerdict(session.openPieceIndex)
+                : null
+            }
+            onVote={session.votePiece}
           />
         </View>
 
@@ -233,22 +261,7 @@ function TodayContent({
         </View>
       </View>
 
-      <PLookSheet
-        outfit={detailLook}
-        weather={weather}
-        onClose={() => setDetailLook(null)}
-      />
 
-      <GarmentDetailSheet
-        piece={openPiece}
-        verdict={
-          session.openPieceIndex !== null
-            ? session.pieceVerdict(session.openPieceIndex)
-            : null
-        }
-        onClose={session.closePiece}
-        onVote={session.votePiece}
-      />
     </ScreenScaffold>
   );
 }

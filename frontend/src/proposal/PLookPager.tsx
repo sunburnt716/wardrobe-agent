@@ -27,7 +27,12 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import type { Outfit, Verdict } from '../data/types';
+import type {
+  Outfit,
+  OutfitPiece,
+  Verdict,
+  WeatherContext,
+} from '../data/types';
 import { PLookCard } from './PLookCard';
 import type { LookVerdict } from './LookVerdictsProvider';
 
@@ -69,6 +74,13 @@ export interface PLookPagerProps {
   isSaved: (outfitId: string) => boolean;
   onToggleSave: (outfit: Outfit) => void;
   onOpenDetails: (outfit: Outfit) => void;
+  /** Flip state. Only the card at `index` can be showing its back. */
+  weather: WeatherContext;
+  flippedIndex: number | null;
+  onFlipBack: () => void;
+  focusPiece: OutfitPiece | null;
+  focusVerdict: Verdict | null;
+  onVote: (verdict: Verdict) => void;
 }
 
 export function PLookPager({
@@ -85,6 +97,12 @@ export function PLookPager({
   isSaved,
   onToggleSave,
   onOpenDetails,
+  weather,
+  flippedIndex,
+  onFlipBack,
+  focusPiece,
+  focusVerdict,
+  onVote,
 }: PLookPagerProps) {
   const ref = useRef<ScrollView>(null);
 
@@ -151,6 +169,12 @@ export function PLookPager({
               saved={isSaved(look.id)}
               onToggleSave={() => onToggleSave(look)}
               onOpenDetails={() => onOpenDetails(look)}
+              weather={weather}
+              flipped={flippedIndex === i}
+              onFlipBack={onFlipBack}
+              focusPiece={flippedIndex === i ? focusPiece : null}
+              focusVerdict={flippedIndex === i ? focusVerdict : null}
+              onVote={onVote}
             />
         </View>
       ))}

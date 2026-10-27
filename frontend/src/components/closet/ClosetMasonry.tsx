@@ -7,13 +7,21 @@
 import { StyleSheet, View } from 'react-native';
 import { space } from '../../theme/tokens';
 import type { ClosetItem } from '../../data/types';
-import { GarmentTile } from './GarmentTile';
+import { CAPTION_ROOM, GarmentTile } from './GarmentTile';
 
-// Caption block height used only to balance the two columns. Must track
-// GarmentTile's caption padding + type, or the columns drift uneven.
-const CAPTION_ESTIMATE = 62;
+// The caption now sits INSIDE the image rather than in a block beneath it,
+// so a tile's height is its slot plus the room the tile adds for the
+// overlay — not slot + a separate caption block. Must track
+// GarmentTile.CAPTION_ROOM or the two columns drift uneven.
+const CAPTION_ESTIMATE = CAPTION_ROOM;
 
-export function ClosetMasonry({ items }: { items: ClosetItem[] }) {
+export function ClosetMasonry({
+  items,
+  onSelect,
+}: {
+  items: ClosetItem[];
+  onSelect?: (item: ClosetItem) => void;
+}) {
   const columns: [ClosetItem[], ClosetItem[]] = [[], []];
   const heights: [number, number] = [0, 0];
 
@@ -29,7 +37,7 @@ export function ClosetMasonry({ items }: { items: ClosetItem[] }) {
         <View key={i} style={styles.column}>
           {col.map((item) => (
             <View key={item.id} style={styles.cell}>
-              <GarmentTile item={item} />
+              <GarmentTile item={item} onPress={onSelect} />
             </View>
           ))}
         </View>

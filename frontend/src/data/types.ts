@@ -46,6 +46,32 @@ export interface Garment {
   tintHint: string;
   /** placeholder: phosphor icon name shown inside the empty slot. */
   iconHint: string;
+
+  /**
+   * 1-5, NOT NULL in the DB (db/migrations/002). 1 = hot-weather only
+   * (linen, mesh), 5 = deep winter (melton, heavy knit).
+   */
+  warmthRating: number;
+  /**
+   * 1-5, NOT NULL. 1 gym/loungewear, 2 everyday casual, 3 smart casual,
+   * 4 business, 5 black tie.
+   */
+  formalityBand: number;
+  waterResistant: boolean;
+  /** Derived from `acquired_at` at query time — never a stored column. */
+  ageDays: number | null;
+
+  /**
+   * How many outfits this garment belongs to, and how many were actually
+   * worn (`outfits.status = 'worn'`).
+   *
+   * TODO(backend): NOT on `type Garment` in schema.graphql today. It is a
+   * count over `outfit_garments`, so exposing it is a schema decision, not
+   * something to infer — either a field on Garment or a dedicated query.
+   * Mocked here so the Closet detail can be designed against it.
+   */
+  outfitCount: number;
+  wornCount: number;
 }
 
 export interface OutfitPiece {
